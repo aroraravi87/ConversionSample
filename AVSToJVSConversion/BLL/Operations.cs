@@ -965,7 +965,7 @@ namespace AVSToJVSConversion.BLL
             int openCurlyBraces = 0;
             string line;
             string DicOutput;
-
+            bool checkVariableExist = false;
 
             try
             {
@@ -1012,44 +1012,55 @@ namespace AVSToJVSConversion.BLL
                         {
                             methodStartFlag = false;
                         }
-
+                        List<char> symbolArray = new List<char>() { '(', ')' };
                         if (!line.Contains('='))
                         {
-                            bool checkVariableExist =
-                                _getVariableDictionary.Keys.Any(
-                                    type => _utility.CheckVariableTypeName(line, type, out ElementType));
-                            _getVariableDictionary.TryGetValue(ElementType, out DicOutput);
-                            if (checkVariableExist)
+                            string[] strItemList = line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                            string lastItem = strItemList.Select(x => x).Last();
+                            foreach (var itemStr in strItemList)
                             {
-                                List<char> symbolArray = new List<char>() { '(', ')' };
-                                if (!symbolArray.Any(n => line.ToCharArray().Contains(n)))
+                                if (itemStr.Trim().Contains(','))
                                 {
-                                    string[] str = line.Replace(";", string.Empty).Trim().Split(',');
-                                    int counter = 1;
-                                    foreach (string item in str)
+                                    string[] strSubItemList = itemStr.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                                    string subLastItem = strSubItemList.Select(x => x).Last();
+                                    foreach (var subItem in strSubItemList)
                                     {
-                                        if (item.Contains("=") && !item.Contains("main"))
+                                        checkVariableExist =
+                                            _getVariableDictionary.Keys.Any(
+                                                type => _utility.CheckVariableTypeName(subItem, type, out ElementType));
+                                        _getVariableDictionary.TryGetValue(ElementType, out DicOutput);
+                                        if (checkVariableExist)
                                         {
-                                            continue;
-                                        }
-                                        if (str.Length > 1)
-                                        {
-                                            if (counter == str.Length)
-                                                stringBuilder.Append(item.Insert(item.Length,
-                                                    string.Format(" = {0}", DicOutput)));
-                                            else
-                                                stringBuilder.Append(item.Insert(item.Length,
-                                                    string.Format(" = {0},", DicOutput)));
-                                        }
-                                        else
-                                            stringBuilder.Append(item.Insert(item.Length,
-                                                string.Format(" = {0}", DicOutput)));
 
-                                        counter++;
+                                            if (!symbolArray.Any(n => subItem.ToCharArray().Contains(n)))
+                                            {
+
+                                                stringBuilder.Append(subItem.Insert(subItem.Length,
+                                                    string.Format(" = {0}{1}", DicOutput, subItem.Equals(subLastItem) ? ' ' : ',')));
+                                            }
+                                        }
+                                    }
+                                }
+
+
+                                else
+                                {
+                                    checkVariableExist =
+                                        _getVariableDictionary.Keys.Any(
+                                            type => _utility.CheckVariableTypeName(itemStr, type, out ElementType));
+                                    _getVariableDictionary.TryGetValue(ElementType, out DicOutput);
+                                    if (checkVariableExist)
+                                    {
+
+                                        if (!symbolArray.Any(n => itemStr.ToCharArray().Contains(n)))
+                                        {
+                                            stringBuilder.Append(itemStr.Insert(itemStr.Length,
+                                                string.Format(" = {0}{1}", DicOutput, itemStr.Equals(lastItem) ? ' ' : ',')));
+                                        }
                                     }
                                 }
                                 if (stringBuilder.Length > 0)
-                                    drs[1] = stringBuilder + ";";
+                                    drs[1] = stringBuilder.ToString().Trim() + ";";
                                 else
                                     drs[1] = drs[1];
                             }
@@ -1094,7 +1105,7 @@ namespace AVSToJVSConversion.BLL
             }
         }
 
-        private static string ConvertDeclaredValues(string line, string elementType, string replaceval, bool appendDataLabel)
+        public static string ConvertDeclaredValues(string line, string elementType, string replaceval, bool appendDataLabel)
         {
             StringBuilder calval = new StringBuilder();
             bool openBracketFound = false;
@@ -2906,108 +2917,119 @@ namespace AVSToJVSConversion.BLL
             try
             {
                 Dictionary<string, DataTypes> variableDictionary = new Dictionary<string, DataTypes>();
-                List<char> symbolArray = new List<char>() { '(', ')' };
+                List<char> symbolArray = new List<char>() { '(', ')', '+' };
                 string pattern = @"^[0-9]+$";
+                const string LABEL_COMMENT = "//Append String Here";
                 _objRegex = new Regex(pattern);
-                List<string> variabList = new List<string>();
+                string strVariableList = string.Empty;
                 char[] chars = null;
                 StringBuilder calval = new StringBuilder();
                 bool openBracketFound = false;
+                int position = 0;
                 foreach (DataRow drs in dtForFile.Rows)
                 {
-                    if (drs[1].Equals("") || drs[1].Equals(" "))
+
+                    string line = drs[1].ToString();
+
+                    if (line.Equals("") || line.Equals(" "))
                     {
                         continue;
                     }
 
-                    string line = drs[1].ToString();
-
-
-                    if (line.Trim().StartsWith("if"))
+                    if (line.Contains("main"))
                     {
-                        line = line.Substring(line.IndexOf('('), line.Length - line.IndexOf('(') - 1);
-                        //if (line.ToCharArray().Where(x => x == '=').Count() == 1)
-                        //{
-                        if (symbolArray.Any(x => line.Contains(x)))
+                        position++;
+                        continue;
+                    }
+                    if (position > 0)
+                    {
+                        position++;
+                    }
+
+                    if (position == 2)
+                    {
+                        drs[1] = LABEL_COMMENT + Environment.NewLine;
+                    }
+
+
+
+                    if (line.Trim().StartsWith("if") || line.Trim().StartsWith("for"))
+                    {
+                        //continue;
+                        if (line.Trim().StartsWith("if"))
                         {
+                            line = line.Substring(line.IndexOf(')'), line.Length - line.IndexOf(')') - 1);
+                            //if (!symbolArray.Any(x => line.Contains(x)))
+                            //{
                             if (line.Contains("="))
                             {
-                                string[] strList = line.Split(new char[] {'='}, StringSplitOptions.RemoveEmptyEntries);
-                                if (!variableDictionary.Any(x => x.Key.Contains(strList[0])) &&
-                                    !variableDictionary.Any(x => x.Value.TypeValue.Contains(strList[0])))
-                                    variableDictionary.Add(strList[0].Trim(),
+                                string[] strList = line.Split(new char[] { '=' },
+                                    StringSplitOptions.RemoveEmptyEntries);
+                                if (symbolArray.Any(x => strList[0].Contains(x)))
+                                {
+                                    strList[0] = strList[0].Replace('(', ' ').Replace(')', ' ').Replace('+', ' ').Trim();
+                                }
+                                if (!variableDictionary.Any(x => x.Key.Equals(strList[0].Trim())) &&
+                                    !variableDictionary.Any(x => x.Value.TypeValue.Equals(strList[0].Trim())))
+                                    if (!string.IsNullOrWhiteSpace(strList[0]))
+                                    {
+                                        variableDictionary.Add(strList[0].Trim(),
                                         new DataTypes()
                                         {
                                             TypeValue = strList[1],
                                             TypeName = CheckDataType(strList[1].Replace(';', ' '))
                                         });
+                                    }
+                                // }
                             }
                         }
-                        //}
-                        //else
-                        //{
-                        //    chars = line.ToCharArray();
-                        //    //    calval.Clear();
-                        //    foreach (char ch in chars)
-                        //    {
+                        continue;
 
-                        //        if (ch == '(')
-                        //        {
-                        //            openBracketFound = true;
-                        //            calval.Append(ch);
-                        //            continue;
-                        //        }
-                        //        if (openBracketFound)
-                        //        {
-                        //            if ((ch == ')') &&
-                        //                (calval.ToString().Count(n => n == '(') ==
-                        //                 calval.ToString().Count(n => n == ')')))
-                        //            {
-                        //                openBracketFound = false;
-                        //                calval.Append(')');
-                        //                variabList.Add(calval.ToString());
-                        //                calval.Clear();
-                        //                continue;
-                        //            }
-                        //            calval.Append(ch);
-                        //            continue;
-                        //        }
-
-                        //        calval.Append(ch);
-                        //    }
-
-                        //}
                     }
-
-                    else if (!line.Trim().StartsWith("for"))
+                    else
                     {
                         if (line.Contains("="))
                         {
                             string[] strList = line.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
-
-                            if (!variableDictionary.Any(x => x.Key.Contains(strList[0])) &&
-                                !variableDictionary.Any(x => x.Value.TypeValue.Contains(strList[0]))
+                            if (symbolArray.Any(x => strList[0].Contains(x)))
+                            {
+                                strList[0] = strList[0].Replace('+', ' ').Trim();
+                            }
+                            if (!variableDictionary.Any(x => x.Key.Equals(strList[0].Trim())) &&
+                                !variableDictionary.Any(x => x.Value.TypeValue.Equals(strList[0].Trim()))
                                 )
-                                variableDictionary.Add(strList[0].Trim(), new DataTypes()
+                                if (!string.IsNullOrWhiteSpace(strList[0]))
                                 {
-                                    TypeValue = strList[1],
-                                    TypeName = CheckDataType(strList[1].Replace(';', ' '))
-                                });
-
+                                    variableDictionary.Add(strList[0].Trim(), new DataTypes()
+                                    {
+                                        TypeValue = strList[1],
+                                        TypeName = CheckDataType(strList[1].Replace(';', ' '))
+                                    });
+                                }
                         }
                     }
+                }
 
-                    //else
-                    //{
-                    //    if (line.Contains("="))
-                    //    {
-                    //        string[] strList = line.Split(new char[] { '=' }, StringSplitOptions.RemoveEmptyEntries);
+                StringBuilder variableList = new StringBuilder();
+                strVariableList = variableDictionary.Select(x => x.Key).Last();
+                foreach (var item in variableDictionary)
+                {
+                    variableList.Append(string.Format("{0} {1}{2}", item.Value.TypeName, item.Key, item.Key.Equals(strVariableList)? ";":";"));
+                }
 
-                    //        if (!variableDictionary.Any(x => x.Key.Contains(strList[0])))
-                    //            variableDictionary.Add(strList[0], new DataTypes() { TypeValue = strList[1], TypeName = CheckDataType(strList[1].Replace(';', ' ')) });
+            
+                if (
+                    dtForFile.AsEnumerable()
+                        .Any(x => ((string)x[1]).Contains(LABEL_COMMENT)))
+                {
+                    dtForFile.AsEnumerable().ToList<DataRow>().
+                        ForEach(
+                            m =>
+                            {
+                                m[1] = ((string)m[1])
+                                    .Replace(LABEL_COMMENT, variableList.ToString());
+                            });
 
-                    //    }
-                    //}
                 }
             }
             catch (Exception ex)
@@ -3024,11 +3046,11 @@ namespace AVSToJVSConversion.BLL
             }
             else if (val.Contains("StringLiteral") && !val.StartsWith("Table"))
             {
-                return "String";
+                return "string";
             }
             else
             {
-                return "Table";
+                return "TablePtr";
             }
 
         }

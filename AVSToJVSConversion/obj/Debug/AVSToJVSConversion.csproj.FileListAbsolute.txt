@@ -38,3 +38,5 @@ D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion.csproj.Gen
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion.exe
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion.pdb
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion.csprojResolveAssemblyReference.cache
+D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\Views\test.baml
+D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\Views\test.g.cs

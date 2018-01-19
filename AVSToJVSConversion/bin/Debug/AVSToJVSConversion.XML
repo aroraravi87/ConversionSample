@@ -44,6 +44,19 @@
             <param name="avsLibraryPath"></param>
             <param name="outputPath"></param>
         </member>
+        <member name="T:AVSToJVSConversion.Views.test">
+            <summary>
+            Interaction logic for test.xaml
+            </summary>
+            <summary>
+            test
+            </summary>
+        </member>
+        <member name="M:AVSToJVSConversion.Views.test.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
         <member name="T:AVSToJVSConversion.App">
             <summary>
             Interaction logic for App.xaml
