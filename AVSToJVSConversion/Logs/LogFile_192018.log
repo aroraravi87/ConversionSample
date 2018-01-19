@@ -1,0 +1,8 @@
+
+2018-01-09 12:22:13,986 ERROR AVSToJVSConversion.Common.InputProcessor-[Exception: Login failed for user 'sa1'. ]
+2018-01-09 12:28:06,430 ERROR AVSToJVSConversion.Common.InputProcessor-[Exception: Login failed for user 'sa1'. ]
+2018-01-09 12:33:34,879 ERROR AVSToJVSConversion.Common.InputProcessor-[Exception: Login failed for user 'sa1'. ]
+2018-01-09 12:36:16,754 ERROR AVSToJVSConversion.Common.InputProcessor-[Exception: Login failed for user 'sa1'. ]
+2018-01-09 16:08:45,923 ERROR AVSToJVSConversion.BLL.InputProcessor-[Exception: Object reference not set to an instance of an object. ]
+2018-01-09 16:18:38,828 ERROR  AVSToJVSConversion.BLL.InputProcessor-[Exception:0-Object reference not set to an instance of an object. ]
+2018-01-09 16:57:23,437 ERROR  AVSToJVSConversion.BLL.InputProcessor-[Exception:99-Invalid attempt to read when no data is present. ]

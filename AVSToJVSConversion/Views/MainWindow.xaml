@@ -1,0 +1,75 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm = "clr-namespace:AVSToJVSConversion.ViewModel"
+         xmlns:ec="http://schemas.microsoft.com/expression/2010/controls"
+         xmlns:cnvt="clr-namespace:AVSToJVSConversion.Common"
+         x:Class="AVSToJVSConversion.Views.MainWindow"
+        mc:Ignorable="d"
+        Title="AVS to JVS Conversion Tool" Height="310" Width="500" ResizeMode="NoResize" HorizontalAlignment="Center" VerticalAlignment="Center"
+         Icon="/AVSToJVSConversion;component/Content/Images/icon.jpg"
+        >
+    <Window.Resources>
+        <vm:MainWindowViewModel x:Key="MainVm"></vm:MainWindowViewModel>
+        <cnvt:CustomConverter x:Key="Converter"></cnvt:CustomConverter>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.Background>
+            <ImageBrush  ImageSource="/AVSToJVSConversion;component/Content/Images/waves.jpg"  Stretch="UniformToFill"/>
+        </Grid.Background>
+
+        <TextBox x:Name="textBoxAVSScriptPath"  HorizontalAlignment="Left" Height="20" IsReadOnly="True" Margin="116,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" Foreground="Black"              
+                 ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" Text="{Binding AVSPath,Source={StaticResource MainVm}, Mode=TwoWay}" >
+
+        </TextBox>
+
+        <TextBox x:Name="textBoxAVSLibraryPath" HorizontalAlignment="Left" Height="20" IsReadOnly="True" Margin="117,100,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150"  ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" Text="{Binding LibraryPath,Source={StaticResource MainVm}, Mode=TwoWay}"  />
+
+        <TextBox x:Name="textBoxOutputPath" HorizontalAlignment="Left" Height="20" IsReadOnly="True" Margin="117,150,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" 
+                  Text="{Binding JVSPath,Source={StaticResource MainVm}, Mode=TwoWay}"/>
+
+        <Button  x:Name="buttonAVSFileSelect" Background="white" Content="Browse" x:Uid="BrowseAVS" HorizontalAlignment="Right" Height="20" Margin="0,50,100,0" VerticalAlignment="Top" Width="70"   FontFamily="the-font"
+                 Command="{Binding SelectCommand,Source={StaticResource MainVm},Mode=TwoWay}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}">
+        </Button>
+        <Button  x:Name="buttonAVSLibraryPathSelect" Content="Browse" x:Uid="BrowseLibrary" HorizontalAlignment="Right" Height="20" 
+                     Margin="0,100,100,0" VerticalAlignment="Top" Width="70" 
+                     Background="white" FontFamily="Sans-Serif"
+                  Command="{Binding SelectCommand,Source={StaticResource MainVm}}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}">
+        </Button>
+        <Button  x:Name="buttonOutputPathSelect" Background="white" Content="Browse" x:Uid="BrowseJVS" HorizontalAlignment="Right" Height="20" Margin="0,150,100,0" VerticalAlignment="Top" Width="70"  FontFamily="Sans-Serif"
+                  Command="{Binding SelectCommand,Source={StaticResource MainVm}}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}">
+        </Button>
+        <Button  x:Name="buttonSubmit" Content="Submit" x:Uid="Conversion"  Background="white" HorizontalContentAlignment="Center"   VerticalContentAlignment="Center" Height="20" Width="70"  FontFamily="Sans-Serif" Margin="57,180,206,28"  HorizontalAlignment="Center" VerticalAlignment="Center"  Command="{Binding SelectCommand,Source={StaticResource MainVm}}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}">
+        </Button>
+        <Button  x:Name="buttonClear" Content="Refresh" x:Uid="Refresh"  Background="white" HorizontalContentAlignment="Center"   VerticalContentAlignment="Center" Height="20" Width="70"  FontFamily="Sans-Serif" Margin="135,180,126,28"  HorizontalAlignment="Center" VerticalAlignment="Center" Command="{Binding SelectCommand,Source={StaticResource MainVm}}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}" >
+        </Button>
+
+
+        <Label Content="Script Path*" HorizontalAlignment="Left" Height="26" Margin="34,47,0,0" VerticalAlignment="Top" Width="100" Foreground="White" >
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+        <Label Content="Library Path" HorizontalAlignment="Left" Height="26" Margin="34,97,0,0" VerticalAlignment="Top" Width="100" Foreground="White">
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+        <Label Content="Output Path*" HorizontalAlignment="Left" Height="26" Margin="34,147,0,0" VerticalAlignment="Top" Width="100" Foreground="White" >
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+
+        <Label Name="labelErrorValidation"  HorizontalAlignment="Center" Height="30" Margin="-70,220,10,10" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Opacity="1" Content="{Binding ErrorMessage, Source={StaticResource MainVm}}" Foreground="{Binding Status,Source={StaticResource MainVm},Converter={StaticResource Converter},Mode=Default}">
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+
+    </Grid>
+</Window>
+

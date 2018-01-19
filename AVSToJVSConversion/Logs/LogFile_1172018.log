@@ -1,0 +1,2 @@
+2018-01-17 16:54:07,755 ERROR  AVSToJVSConversion.BLL.InputProcessor-[Exception:126-FileName:CGML_CFO_NetPositionsRpt.mls,Exception Message Index was outside the bounds of the array.,Trace Info    at AVSToJVSConversion.BLL.Operations.InitlializedVariables(DataTable dtForFile) in d:\AVSToJVSRepository\AVSToJVSConversion\BLL\Operations.cs:line 1073
+   at AVSToJVSConversion.BLL.InputProcessor.Process(String avsScriptPath, String avsLibraryPath, String outputPath) in d:\AVSToJVSRepository\AVSToJVSConversion\BLL\InputProcessor.cs:line 86  ]

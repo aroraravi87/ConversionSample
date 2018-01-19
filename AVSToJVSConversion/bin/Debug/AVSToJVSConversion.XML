@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AVSToJVSConversion</name>
+    </assembly>
+    <members>
+        <member name="M:AVSToJVSConversion.BLL.Operations.ValidateWhileStatement(System.Data.DataTable)">
+            <summary>
+            
+            </summary>
+            <param name="dtForFile"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Operations.CheckWhile(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Operations.ValidateSymbols(System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="strSymbol"></param>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.DLL.DbConnection.GetSqlConnection">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.DLL.DbConnection.CloseSqlConnection(System.Data.SqlClient.SqlConnection)">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.InputProcessor.Process(System.String,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="avsScriptPath"></param>
+            <param name="avsLibraryPath"></param>
+            <param name="outputPath"></param>
+        </member>
+        <member name="T:AVSToJVSConversion.App">
+            <summary>
+            Interaction logic for App.xaml
+            </summary>
+            <summary>
+            App
+            </summary>
+        </member>
+        <member name="M:AVSToJVSConversion.App.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="M:AVSToJVSConversion.App.Main">
+            <summary>
+            Application Entry Point.
+            </summary>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.LineValidator.Operation10(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="content"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.ViewModel.MainWindowViewModel.RaisedPropertyChanged(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="properyName"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.ViewModel.MainWindowViewModel.#ctor">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:AVSToJVSConversion.ViewModel.MainWindowViewModel.OnActionExecute(System.Object)">
+            <summary>
+            
+            </summary>
+            <param name="Parameter"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.ViewModel.MainWindowViewModel.ConvertAvsFiletoJvs">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:AVSToJVSConversion.Views.MainWindow">
+            <summary>
+            MainWindow
+            </summary>
+        </member>
+        <member name="M:AVSToJVSConversion.Views.MainWindow.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
+        </member>
+        <member name="T:AVSToJVSConversion.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:AVSToJVSConversion.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:AVSToJVSConversion.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="T:XamlGeneratedNamespace.GeneratedInternalTypeHelper">
+            <summary>
+            GeneratedInternalTypeHelper
+            </summary>
+        </member>
+        <member name="M:XamlGeneratedNamespace.GeneratedInternalTypeHelper.CreateInstance(System.Type,System.Globalization.CultureInfo)">
+            <summary>
+            CreateInstance
+            </summary>
+        </member>
+        <member name="M:XamlGeneratedNamespace.GeneratedInternalTypeHelper.GetPropertyValue(System.Reflection.PropertyInfo,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            GetPropertyValue
+            </summary>
+        </member>
+        <member name="M:XamlGeneratedNamespace.GeneratedInternalTypeHelper.SetPropertyValue(System.Reflection.PropertyInfo,System.Object,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            SetPropertyValue
+            </summary>
+        </member>
+        <member name="M:XamlGeneratedNamespace.GeneratedInternalTypeHelper.CreateDelegate(System.Type,System.Object,System.String)">
+            <summary>
+            CreateDelegate
+            </summary>
+        </member>
+        <member name="M:XamlGeneratedNamespace.GeneratedInternalTypeHelper.AddEventHandler(System.Reflection.EventInfo,System.Object,System.Delegate)">
+            <summary>
+            AddEventHandler
+            </summary>
+        </member>
+    </members>
+</doc>
