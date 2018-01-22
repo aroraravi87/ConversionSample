@@ -18,5 +18,9 @@ namespace AVSToJVSConversion.Common
 
         public const string INITIALIZESQL = "select * from Initialize";
 
+    
+    
     }
+
+
 }

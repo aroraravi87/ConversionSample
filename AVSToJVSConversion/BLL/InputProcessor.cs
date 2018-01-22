@@ -55,7 +55,7 @@ namespace AVSToJVSConversion.BLL
             {
                 try
                 {
-                    bool t = true;
+                    bool mainNotExist;
                         
                     foreach (string file in Directory.EnumerateFiles(avsScriptPath, "*.mls"))
                     {
@@ -72,11 +72,12 @@ namespace AVSToJVSConversion.BLL
                         _operations.RemoveCommentsFromDtForFile(_dtForFile);
                         _operations.SeperateComments(_dtForFile);
                         _dtForLiterals = _operations.RemoveLiterals(_dtForFile, false);
-                        _operations.CheckIfMainExist(_dtForFile);
-                        
-                        
-                        _operations.HandleScriptIfMainNotExist(_dtForFile);
-
+                       
+                        _operations.CheckIfMainExist(_dtForFile,out mainNotExist);
+                        if (!mainNotExist)
+                        {
+                            _operations.HandleScriptIfMainNotExist(_dtForFile); // Method for Credit Rating Script
+                        }
 
                         _dtForFile = _operations.ConvertMultipleLinesToSingle(_dtForFile);
                         _operations.RemoveMethodPrototype(_dtForFile);
@@ -93,18 +94,23 @@ namespace AVSToJVSConversion.BLL
                         {
                             _dtForMethodsAvailable = _initializeTables.GetDtForMethodPresent();
                         }
+
+                       
+
                         _operations.GetMethodsListInFile(_dtForFile, _fileName, _dtForMethodsAvailable);
                         _dtForVariables = _operations.GetVariableList(_dtForFile, _fileName);
                         _operations.ConvertStaticMethod(_dtForFile, _dtForMethodsAvailable, _dtForInclude, _fileName);
                         _operations.ConvertNonStaticMethod(_dtForFile, _dtForMethodsAvailable, _dtForInclude, _fileName);
                         _operations.ConvertIfStatements(_dtForFile);
                         _operations.ReplaceTrueFalse(_dtForFile);
+
+                        _operations.ConvertForStatements(_dtForFile); // Initliazed for loop variable
+
                         _operations.ValidateWhileStatement(_dtForFile);
                         _operations.ReplaceWhileIntoBoolStatement(_dtForFile);
                         _operations.ConvertEnums(_dtForFile, _dtForVariables, _fileName, _dtForInclude);
                         _operations.AddPublicStaticInLibraryMethods(_dtForFile);
                         _operations.AddThrowsExceptionInLibraryMethods(_dtForFile);
-                        //_operations.AddTryCatchStatement(_dtForFile);
                         _operations.GenerateOutputFile(_dtForFile, _dtForInclude, _dtForLiterals, outputPath, _fileName);
 
                         _dtForFile.Dispose();

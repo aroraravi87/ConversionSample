@@ -512,9 +512,10 @@ namespace AVSToJVSConversion.BLL
             return dtForLiterals;
         }
 
-        public void CheckIfMainExist(DataTable dtForFile)
+        public void CheckIfMainExist(DataTable dtForFile, out bool isMainExist)
         {
             char[] lineArray;
+            isMainExist = true;
             foreach (DataRow drs in dtForFile.Rows)
             {
                 lineArray = drs[1].ToString().Trim().ToCharArray();
@@ -523,14 +524,18 @@ namespace AVSToJVSConversion.BLL
                 {
                     if (character == '{')
                     {
+                        isMainExist = false;
                         drs[1] = "void main()" + drs[1];
+                        return;
                     }
                     else
                     {
+                        isMainExist = true;
                         return;
                     }
                 }
             }
+
         }
 
         public string GetIncludeList(DataTable dtForFile, DataTable dtForLiterals)
@@ -966,7 +971,8 @@ namespace AVSToJVSConversion.BLL
             string line;
             string DicOutput;
             bool checkVariableExist = false;
-
+            string PrevElementType = string.Empty;
+           
             try
             {
                 StringBuilder stringBuilder = new StringBuilder();
@@ -985,6 +991,7 @@ namespace AVSToJVSConversion.BLL
 
                     if (!methodNamefoundFlag && !methodStartFlag && _utility.DetectMethodNameStartPointer(line))
                     {
+
                         if (!line.Contains("=") && !line.Contains("+"))
                         {
                             methodNamefoundFlag = true;
@@ -1013,36 +1020,51 @@ namespace AVSToJVSConversion.BLL
                             methodStartFlag = false;
                         }
                         List<char> symbolArray = new List<char>() { '(', ')' };
+
+                        if (line.Trim().StartsWith("if") || line.Trim().StartsWith("for"))
+                        {
+                            continue;
+                        }
+
+
+
                         if (!line.Contains('='))
                         {
                             string[] strItemList = line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                            strItemList[0] = strItemList[0].Replace(strItemList[0],
+                                strItemList[0].Contains('{')
+                                    ? strItemList[0].Substring(strItemList[0].IndexOf('{'),
+                                        strItemList[0].Length - strItemList[0].IndexOf('{'))
+                                    : strItemList[0]);
+
                             string lastItem = strItemList.Select(x => x).Last();
                             foreach (var itemStr in strItemList)
                             {
                                 if (itemStr.Trim().Contains(','))
                                 {
-                                    string[] strSubItemList = itemStr.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                                    string[] strSubItemList = itemStr.Split(new char[] { ',' },
+                                        StringSplitOptions.RemoveEmptyEntries);
                                     string subLastItem = strSubItemList.Select(x => x).Last();
                                     foreach (var subItem in strSubItemList)
                                     {
-                                        checkVariableExist =
-                                            _getVariableDictionary.Keys.Any(
-                                                type => _utility.CheckVariableTypeName(subItem, type, out ElementType));
-                                        _getVariableDictionary.TryGetValue(ElementType, out DicOutput);
-                                        if (checkVariableExist)
+                                        if (!string.IsNullOrWhiteSpace(PrevElementType))
+                                            ElementType = PrevElementType;
+                                        _getVariableDictionary.Keys.Any(
+                                            type => _utility.CheckVariableTypeName(subItem, type, out ElementType));
+
+                                        if (!string.IsNullOrWhiteSpace(ElementType))
+                                            PrevElementType = ElementType;
+
+                                        _getVariableDictionary.TryGetValue(!string.IsNullOrWhiteSpace(ElementType) ? ElementType : PrevElementType, out DicOutput);
+
+                                        if (!symbolArray.Any(n => subItem.ToCharArray().Contains(n)))
                                         {
-
-                                            if (!symbolArray.Any(n => subItem.ToCharArray().Contains(n)))
-                                            {
-
-                                                stringBuilder.Append(subItem.Insert(subItem.Length,
-                                                    string.Format(" = {0}{1}", DicOutput, subItem.Equals(subLastItem) ? ' ' : ',')));
-                                            }
+                                            stringBuilder.Append(subItem.Insert(subItem.Length,
+                                                                                        string.Format(" = {0}{1}", DicOutput,
+                                                                                            subItem.Equals(subLastItem) ? ' ' : ',')));
                                         }
                                     }
                                 }
-
-
                                 else
                                 {
                                     checkVariableExist =
@@ -1055,15 +1077,25 @@ namespace AVSToJVSConversion.BLL
                                         if (!symbolArray.Any(n => itemStr.ToCharArray().Contains(n)))
                                         {
                                             stringBuilder.Append(itemStr.Insert(itemStr.Length,
-                                                string.Format(" = {0}{1}", DicOutput, itemStr.Equals(lastItem) ? ' ' : ',')));
+                                                string.Format(" = {0}{1}", DicOutput,
+                                                    itemStr.Equals(lastItem) ? ' ' : ';')));
                                         }
                                     }
+
                                 }
-                                if (stringBuilder.Length > 0)
-                                    drs[1] = stringBuilder.ToString().Trim() + ";";
-                                else
-                                    drs[1] = drs[1];
+
                             }
+                            if (stringBuilder.Length > 0)
+                            {
+                                if (line.Contains('{'))
+                                    drs[1] = string.Concat(drs[1].ToString()
+                                                                            .Replace(line.Substring(line.IndexOf('{'), line.Length - line.IndexOf('{'))
+                                                                                    , stringBuilder.ToString()), ';');
+                                else
+                                    drs[1] = string.Concat(stringBuilder.ToString(), ';');
+                            }
+                            else
+                                drs[1] = drs[1];
                         }
                         else
                         {
@@ -1087,7 +1119,8 @@ namespace AVSToJVSConversion.BLL
                                 if (!string.IsNullOrWhiteSpace(ElementType) && !string.IsNullOrWhiteSpace(DicOutput))
                                 {
                                     IsChanged = true;
-                                    calval1.Append(ConvertDeclaredValues(item + ';', ElementType, DicOutput, appendDataLabel));
+                                    calval1.Append(ConvertDeclaredValues(item + ';', ElementType, DicOutput,
+                                        appendDataLabel));
                                 }
                             }
                             if (IsChanged)
@@ -1105,7 +1138,8 @@ namespace AVSToJVSConversion.BLL
             }
         }
 
-        public static string ConvertDeclaredValues(string line, string elementType, string replaceval, bool appendDataLabel)
+        public static string ConvertDeclaredValues(string line, string elementType, string replaceval,
+            bool appendDataLabel)
         {
             StringBuilder calval = new StringBuilder();
             bool openBracketFound = false;
@@ -1125,7 +1159,8 @@ namespace AVSToJVSConversion.BLL
 
                 if (openBracketFound)
                 {
-                    if (character == ')' && (calval.ToString().Count(n => n == '(') != calval.ToString().Count(n => n == ')')))
+                    if (character == ')' &&
+                        (calval.ToString().Count(n => n == '(') != calval.ToString().Count(n => n == ')')))
                     {
                         openBracketFound = false;
                     }
@@ -2137,7 +2172,7 @@ namespace AVSToJVSConversion.BLL
             int startIndex;
             int endIndex;
             int position;
-
+            bool ignoreFound = false;
 
             bool methodNamefoundFlag = false;
             bool methodStartFlag = false;
@@ -2211,7 +2246,12 @@ namespace AVSToJVSConversion.BLL
                         if (!methodNamefoundFlag && !methodStartFlag &&
                             _utility.DetectMethodNameStartPointer(drs[1].ToString()))
                         {
-                            if (drs[1].ToString().Contains("=") || drs[1].ToString().Contains("+"))
+                            ignoreFound = false;
+                            if (drs[1].ToString().IndexOf("=") > drs[1].ToString().IndexOf(")"))
+                            {
+                                ignoreFound = true;
+                            }
+                            if ((drs[1].ToString().Contains("=") || drs[1].ToString().Contains("+")) || ignoreFound)
                             {
                                 position = 0;
                                 while (drs[1].ToString().IndexOf(_dataReader.GetValue(1).ToString(), position) >= 0)
@@ -2277,7 +2317,12 @@ namespace AVSToJVSConversion.BLL
                         if (!methodNamefoundFlag && !methodStartFlag &&
                             _utility.DetectMethodNameStartPointer(drs[1].ToString()))
                         {
-                            if (!drs[1].ToString().Contains("=") && !drs[1].ToString().Contains("+"))
+                            ignoreFound = false;
+                            if (drs[1].ToString().IndexOf("=") > drs[1].ToString().IndexOf(")"))
+                            {
+                                ignoreFound = true;
+                            }
+                            if ((!drs[1].ToString().Contains("=") && !drs[1].ToString().Contains("+")) || ignoreFound)
                             {
                                 methodNamefoundFlag = true;
                                 methodName =
@@ -2456,11 +2501,13 @@ namespace AVSToJVSConversion.BLL
             string variableList = "";
             string parameterList = "";
             string line;
+            bool ignorefound = false;
 
             dtForVariables = _initializeTables.GetDtForVariables();
 
             foreach (DataRow drs in dtForFile.Rows)
             {
+
                 line = drs[1].ToString();
                 if (line.Equals(String.Empty))
                 {
@@ -2469,12 +2516,18 @@ namespace AVSToJVSConversion.BLL
 
                 if (!methodNamefoundFlag && !methodStartFlag && _utility.DetectMethodNameStartPointer(line))
                 {
-                    if (!line.Contains("=") && !line.Contains("+"))
+                    ignorefound = false;
+                    if (line.IndexOf("=") > line.IndexOf(")"))
+                    {
+                        ignorefound = true;
+                    }
+                    if ((!line.Contains("=") && !line.Contains("+")) || ignorefound)
                     {
                         methodNamefoundFlag = true;
                         methodName = line.Substring(line.IndexOf(" "), line.IndexOf("(") - line.IndexOf(" ")).Trim();
                         firstGo = true;
                     }
+
                 }
 
                 if (!methodStartFlag && methodNamefoundFlag && firstGo)
@@ -2563,6 +2616,7 @@ namespace AVSToJVSConversion.BLL
             }
             return dtForVariables;
         }
+
         public void AddTryCatchStatement(DataTable dtForFile)
         {
             try
@@ -2905,13 +2959,17 @@ namespace AVSToJVSConversion.BLL
                         closeBracket = true;
                     }
                 }
-                strSymbol = strSymbol.Replace(strSymbol, closeBracket ? string.Concat(strSymbol, ">", 0, ')') : string.Concat(strSymbol, ">", 0));
+                strSymbol = strSymbol.Replace(strSymbol,
+                    closeBracket ? string.Concat(strSymbol, ">", 0, ')') : string.Concat(strSymbol, ">", 0));
                 closeBracket = false;
                 return strSymbol;
             }
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtForFile"></param>
         public void HandleScriptIfMainNotExist(DataTable dtForFile)
         {
             try
@@ -2925,7 +2983,7 @@ namespace AVSToJVSConversion.BLL
                 char[] chars = null;
                 StringBuilder calval = new StringBuilder();
                 bool openBracketFound = false;
-                int position = 0;
+
                 foreach (DataRow drs in dtForFile.Rows)
                 {
 
@@ -2938,18 +2996,11 @@ namespace AVSToJVSConversion.BLL
 
                     if (line.Contains("main"))
                     {
-                        position++;
+                        drs[1] = line + LABEL_COMMENT;
+
                         continue;
                     }
-                    if (position > 0)
-                    {
-                        position++;
-                    }
 
-                    if (position == 2)
-                    {
-                        drs[1] = LABEL_COMMENT + Environment.NewLine;
-                    }
 
 
 
@@ -2974,11 +3025,11 @@ namespace AVSToJVSConversion.BLL
                                     if (!string.IsNullOrWhiteSpace(strList[0]))
                                     {
                                         variableDictionary.Add(strList[0].Trim(),
-                                        new DataTypes()
-                                        {
-                                            TypeValue = strList[1],
-                                            TypeName = CheckDataType(strList[1].Replace(';', ' '))
-                                        });
+                                            new DataTypes()
+                                            {
+                                                TypeValue = strList[1],
+                                                TypeName = CheckDataType(strList[1].Replace(';', ' '))
+                                            });
                                     }
                                 // }
                             }
@@ -3012,12 +3063,15 @@ namespace AVSToJVSConversion.BLL
 
                 StringBuilder variableList = new StringBuilder();
                 strVariableList = variableDictionary.Select(x => x.Key).Last();
+
+
                 foreach (var item in variableDictionary)
                 {
-                    variableList.Append(string.Format("{0} {1}{2}", item.Value.TypeName, item.Key, item.Key.Equals(strVariableList)? ";":";"));
+                    variableList.Append(string.Format("{0} {1}{2}", item.Value.TypeName, item.Key,
+                        item.Key.Equals(strVariableList) ? ";" : ";"));
                 }
 
-            
+
                 if (
                     dtForFile.AsEnumerable()
                         .Any(x => ((string)x[1]).Contains(LABEL_COMMENT)))
@@ -3037,7 +3091,11 @@ namespace AVSToJVSConversion.BLL
                 throw ex;
             }
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="val"></param>
+        /// <returns></returns>
         private string CheckDataType(string val)
         {
             if (_objRegex.IsMatch(val.Trim()))
@@ -3051,6 +3109,52 @@ namespace AVSToJVSConversion.BLL
             else
             {
                 return "TablePtr";
+            }
+
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtForFile"></param>
+        public void ConvertForStatements(DataTable dtForFile)
+        {
+
+            string line = string.Empty;
+            try
+            {
+                foreach (DataRow drs in dtForFile.Rows)
+                {
+                    if (string.IsNullOrWhiteSpace(drs[1].ToString()))
+                    {
+                        continue;
+                    }
+
+                    line = drs[1].ToString();
+
+                    if (line.Trim().StartsWith("for"))
+                    {
+                        line = line.Substring(line.IndexOf('(') + 1, line.Length - line.IndexOf('(') - 1);
+
+                        string[] strSubItem = line.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        if (!string.IsNullOrWhiteSpace(strSubItem[0]))
+                        {
+                            if (!strSubItem[0].Contains("="))
+                            {
+                                drs[1] = drs[1].ToString().Replace(line, string.Format("{0};{1};{2}", string.Concat(strSubItem[0], "=", strSubItem[0]),
+                                    strSubItem[1], strSubItem[2]));
+
+                            }
+                        }
+                    }
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
 
         }

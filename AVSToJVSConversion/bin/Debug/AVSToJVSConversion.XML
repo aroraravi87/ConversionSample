@@ -25,6 +25,25 @@
             <param name="line"></param>
             <returns></returns>
         </member>
+        <member name="M:AVSToJVSConversion.BLL.Operations.HandleScriptIfMainNotExist(System.Data.DataTable)">
+            <summary>
+            
+            </summary>
+            <param name="dtForFile"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Operations.CheckDataType(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="val"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Operations.ConvertForStatements(System.Data.DataTable)">
+            <summary>
+            
+            </summary>
+            <param name="dtForFile"></param>
+        </member>
         <member name="M:AVSToJVSConversion.DLL.DbConnection.GetSqlConnection">
             <summary>
             
