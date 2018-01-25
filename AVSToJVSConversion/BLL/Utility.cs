@@ -424,6 +424,56 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+        public bool CheckAVSVariableDeclaration(string line)
+        {
+            if (CheckVariableType(line, "int "))
+            {
+                return true;
+            }
+
+            if (CheckVariableType(line, "TablePtr "))
+            {
+                return true;
+            }
+
+            if (CheckVariableType(line, "XStringPtr "))
+            {
+                return true;
+            }
+
+            if (CheckVariableType(line, "string "))
+            {
+                return true;
+            }
+
+            if (CheckVariableType(line, "TRANSACTION* "))
+            {
+                return true;
+            }
+
+            if (CheckVariableType(line, "INS_DATA* "))
+            {
+                return true;
+            }
+
+            if (CheckVariableType(line, "DATE_TIME* "))
+            {
+                return true;
+            }
+
+            if (CheckVariableType(line, "NOMINATION_PTR "))
+            {
+                return true;
+            }
+
+            if (CheckVariableType(line, "double "))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public bool CheckVariableType(string line, string variableType)
         {
             int position = -1;
@@ -500,6 +550,55 @@ namespace AVSToJVSConversion.BLL
             }
             return largest;
         }
+
+        public int GetPositionOfAVSVariableTypeInLine(string line)
+        {
+            int largest = -1;
+
+            largest = GetVariableTypePosition(line, "int ");
+
+            if (GetVariableTypePosition(line, "TablePtr ") > largest)
+            {
+                largest = GetVariableTypePosition(line, "TablePtr ");
+            }
+
+            if (GetVariableTypePosition(line, "XStringPtr ") > largest)
+            {
+                largest = GetVariableTypePosition(line, "XStringPtr ");
+            }
+
+            if (GetVariableTypePosition(line, "string ") > largest)
+            {
+                largest = GetVariableTypePosition(line, "string ");
+            }
+
+            if (GetVariableTypePosition(line, "TRANSACTION* ") > largest)
+            {
+                largest = GetVariableTypePosition(line, "TRANSACTION* ");
+            }
+
+            if (GetVariableTypePosition(line, "INS_DATA* ") > largest)
+            {
+                largest = GetVariableTypePosition(line, "INS_DATA* ");
+            }
+
+            if (GetVariableTypePosition(line, "DATE_TIME* ") > largest)
+            {
+                largest = GetVariableTypePosition(line, "DATE_TIME* ");
+            }
+
+            if (GetVariableTypePosition(line, "NOMINATION_PTR ") > largest)
+            {
+                largest = GetVariableTypePosition(line, "NOMINATION_PTR ");
+            }
+
+            if (GetVariableTypePosition(line, "double ") > largest)
+            {
+                largest = GetVariableTypePosition(line, "double ");
+            }
+            return largest;
+        }
+
         public bool CheckVariableTypeName(string line, string variableType, out string element)
         {
 
@@ -724,11 +823,14 @@ namespace AVSToJVSConversion.BLL
                     continue;
                 }
             }
-            if (excudeMethods.Contains(methodName))
+            if (!methodName.Equals("") && excudeMethods.Contains(methodName))
             {
                 if (!excudeMethods.Contains(","))
                 {
-                    return false;
+                    if (excudeMethods.Equals(methodName))
+                    {
+                        return false;
+                    }
                 }
                 string[] excludeMethod = excudeMethods.Split(',');
                 for (int i = 0; i < excludeMethod.Length; i++)
@@ -807,6 +909,7 @@ namespace AVSToJVSConversion.BLL
 
         public string CorrectTheVariableList(string variableList)
         {
+            int openBracketCount = 0;
             bool equalFound = false;
             bool openBracketFound = false;
             string returnList = "";
@@ -820,9 +923,15 @@ namespace AVSToJVSConversion.BLL
             {
                 if (openBracketFound)
                 {
+                    if (character == '(')
+                        openBracketCount++;
                     if (character == ')')
                     {
-                        openBracketFound = false;
+                        openBracketCount--;
+                        if (openBracketCount == 0)
+                        {
+                            openBracketFound = false;
+                        }
                     }
                     continue;
                 }
@@ -831,6 +940,7 @@ namespace AVSToJVSConversion.BLL
                 {
                     if (character == '(')
                     {
+                        openBracketCount++;
                         openBracketFound = true;
                         continue;
                     }
@@ -857,9 +967,9 @@ namespace AVSToJVSConversion.BLL
         }
         public void GetCustomLogAppender()
         {
-            string path = String.Format("{0}{1}{2}{3}{4}", "LogFile_", DateTime.Now.Month
+            string path = String.Concat("LogFile_", DateTime.Now.Month
                                    , DateTime.Now.Day
-                                   , DateTime.Now.Year, ".log");
+                                   , DateTime.Now.Year, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second, ".log");
 
             log4net.Repository.ILoggerRepository repository = log4net.LogManager.GetRepository();
             foreach (log4net.Appender.IAppender appender in repository.GetAppenders())

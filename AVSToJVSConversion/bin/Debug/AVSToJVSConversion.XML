@@ -4,6 +4,20 @@
         <name>AVSToJVSConversion</name>
     </assembly>
     <members>
+        <member name="M:AVSToJVSConversion.BLL.Operations.ModifyIncludeTable(AVSToJVSConversion.BLL.Operations.DataTypes,System.Data.DataTable)">
+            <summary>
+            
+            </summary>
+            <param name="DicOutput"></param>
+            <param name="dtForInclude"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Operations.InitlializeVariables(System.Data.DataTable,System.Data.DataTable)">
+            <summary>
+            
+            </summary>
+            <param name="dtForFile"></param>
+            <param name="dtDataTable"></param>
+        </member>
         <member name="M:AVSToJVSConversion.BLL.Operations.ValidateWhileStatement(System.Data.DataTable)">
             <summary>
             
@@ -63,19 +77,6 @@
             <param name="avsLibraryPath"></param>
             <param name="outputPath"></param>
         </member>
-        <member name="T:AVSToJVSConversion.Views.test">
-            <summary>
-            Interaction logic for test.xaml
-            </summary>
-            <summary>
-            test
-            </summary>
-        </member>
-        <member name="M:AVSToJVSConversion.Views.test.InitializeComponent">
-            <summary>
-            InitializeComponent
-            </summary>
-        </member>
         <member name="T:AVSToJVSConversion.App">
             <summary>
             Interaction logic for App.xaml
@@ -117,6 +118,21 @@
             
             </summary>
             <param name="Parameter"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.ViewModel.MainWindowViewModel.CheckWhile(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.ViewModel.MainWindowViewModel.ValidateSymbols(System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="strSymbol"></param>
+            <param name="line"></param>
+            <returns></returns>
         </member>
         <member name="M:AVSToJVSConversion.ViewModel.MainWindowViewModel.ConvertAvsFiletoJvs">
             <summary>

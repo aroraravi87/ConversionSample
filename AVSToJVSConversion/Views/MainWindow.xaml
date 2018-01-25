@@ -14,6 +14,48 @@
     <Window.Resources>
         <vm:MainWindowViewModel x:Key="MainVm"></vm:MainWindowViewModel>
         <cnvt:CustomConverter x:Key="Converter"></cnvt:CustomConverter>
+
+        <Style TargetType="ProgressBar">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar" >
+                        <Grid x:Name="Root">
+                            <Border 
+            Name="PART_Track" 
+            CornerRadius="2" 
+            Background="Black"
+            BorderBrush="Gray"
+            BorderThickness="2" />
+                            <Border 
+            Name="PART_Indicator" 
+            CornerRadius="2" 
+            Background="White" 
+            BorderBrush="White" 
+            BorderThickness="2" 
+            HorizontalAlignment="Left" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <!-- Getting vertical style working using technique described here: http://stackoverflow.com/a/6849237/7532 -->
+                            <Trigger Property="Orientation" Value="Vertical">
+                                <Setter TargetName="Root" Property="LayoutTransform">
+                                    <Setter.Value>
+                                        <RotateTransform Angle="270" />
+                                    </Setter.Value>
+                                </Setter>
+
+                                <Setter TargetName="Root" Property="Width"
+                Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Height}"
+              />
+                                <Setter TargetName="Root" Property="Height"
+                Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Width}"
+              />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -69,6 +111,10 @@
                 <DropShadowEffect/>
             </Label.Effect>
         </Label>
+
+        <!--<ProgressBar Name="ProgressPanel" Width="200" Height="20" Orientation="Horizontal" Margin="-70,250,10,10" Value="{Binding ProgressStatus,Source={StaticResource MainVm}}">
+            
+        </ProgressBar>-->
 
     </Grid>
 </Window>
