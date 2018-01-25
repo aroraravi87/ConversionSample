@@ -18,25 +18,22 @@ namespace AVSToJVSConversion.BLL
 {
     class IncludeFileHandler
     {
-        private Operations _operations = null;
-        private InitializeTables _initializeTables = null;
-
+        private readonly Operations _operations;
+        
         public IncludeFileHandler()
         {
             _operations = new Operations();
-            _initializeTables = new InitializeTables();
         }
 
-        public DataTable ManageIncludes(string includeList, string libraryPath)
+        public void ManageIncludes(string includeList, string libraryPath, DataTable dtForMethodsAvailable)
         {
-
             try
             {
                 DataTable dtForFileOfInclude;
-                DataTable dtForMethodsAvailable = null;
+                DataTable dtForLiterals;
                 string[] includeFileNames;
                 string fileName;
-
+                string includeListOfIncludeFile;
 
                 if (includeList.Contains(","))
                 {
@@ -49,8 +46,6 @@ namespace AVSToJVSConversion.BLL
                     includeFileNames[0] = includeList;
                 }
 
-                dtForMethodsAvailable = _initializeTables.GetDtForMethodPresent();
-
                 for (int i = 0; i < includeFileNames.Length; i++)
                 {
                     foreach (string file in Directory.EnumerateFiles(libraryPath, includeFileNames[i] + ".mls"))
@@ -58,24 +53,24 @@ namespace AVSToJVSConversion.BLL
                         fileName = file.Replace(libraryPath + "\\", "");
                         dtForFileOfInclude = _operations.GetDataTableForFile(file);
                         _operations.RemoveCommentsFromDtForFile(dtForFileOfInclude);
-                        _operations.RemoveLiterals(dtForFileOfInclude, true);
+                        dtForLiterals = _operations.RemoveLiterals(dtForFileOfInclude, false);
                         dtForFileOfInclude = _operations.ConvertMultipleLinesToSingle(dtForFileOfInclude);
-                        _operations.RemoveIncludeListStatement(dtForFileOfInclude);
                         _operations.RemoveMethodPrototype(dtForFileOfInclude);
+                        includeListOfIncludeFile = _operations.GetIncludeList(dtForFileOfInclude, dtForLiterals);
+                        if (!includeListOfIncludeFile.Equals(""))
+                        {
+                            ManageIncludes(includeListOfIncludeFile, libraryPath, dtForMethodsAvailable);
+                        }
                         _operations.RemoveIncludeListStatement(dtForFileOfInclude);
                         _operations.ConvertInitialization(dtForFileOfInclude, null, false);
                         _operations.GetMethodsListInFile(dtForFileOfInclude, fileName, dtForMethodsAvailable);
                     }
                 }
-                return dtForMethodsAvailable;
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
-
-
         }
     }
 }

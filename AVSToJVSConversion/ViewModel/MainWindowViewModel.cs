@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.IO.Packaging;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -129,6 +131,21 @@ namespace AVSToJVSConversion.ViewModel
                 RaisedPropertyChanged("Status");
             }
         }
+
+
+        private int _progressStatus;
+
+        public int ProgressStatus
+        {
+            get { return _progressStatus; }
+            set
+            {
+                _progressStatus = value;
+                RaisedPropertyChanged("ProgressStatus");
+            }
+        }
+
+
         #endregion
 
         #region === [Private Methods] =============================
@@ -142,6 +159,7 @@ namespace AVSToJVSConversion.ViewModel
             switch (Parameter.ToString())
             {
                 case "BrowseAVS":
+                    ErrorMessage = string.Empty;
                     using (var folderDialog = new FolderBrowserDialog())
                     {
                         folderDialog.ShowDialog();
@@ -149,6 +167,7 @@ namespace AVSToJVSConversion.ViewModel
                     }
                     break;
                 case "BrowseLibrary":
+                    ErrorMessage = string.Empty;
                     using (var folderDialog = new FolderBrowserDialog())
                     {
                         folderDialog.ShowDialog();
@@ -156,6 +175,7 @@ namespace AVSToJVSConversion.ViewModel
                     }
                     break;
                 case "BrowseJVS":
+                    ErrorMessage = string.Empty;
                     using (var folderDialog = new FolderBrowserDialog())
                     {
                         folderDialog.ShowDialog();
@@ -172,9 +192,9 @@ namespace AVSToJVSConversion.ViewModel
                     ValidateError.Opacity = 0;
                     ErrorMessage = string.Empty;
                     Status = false;
-
-                    string str = CheckWhileNew("while((!IsDone || !getvalue(a,b)) && !isdeleted)");
-
+                    Operations op=new Operations();
+                   // string str = CheckWhileNew("while(((isactive && ismain>0)) ||(IsDeleted && IsMain))");
+                    //string str = CheckInitilize("  TablePtr tran_list = tblMasterDetails, empty;");
                     break;
 
             }
@@ -182,274 +202,353 @@ namespace AVSToJVSConversion.ViewModel
         }
 
 
+
         private string CheckWhileNew(string line)
         {
-            string subStr = string.Empty;
-            List<char> symbolArray = new List<char>() { '(', ')' };
-            Dictionary<string, string> dicList = new Dictionary<string, string>();
+            Dictionary<string, string> strList = new Dictionary<string, string>();
+            string substr = "";
+            bool openbracket = false;
+            bool closebracket = false;
+            List<char> symbolArray1 = new List<char>() { '(', ')' };
+
+            StringBuilder str = new StringBuilder();
             char[] chars;
-            bool openBracket = false;
-            bool closeBracket = false;
-            int index = 0;
             int counter = 1;
-            StringBuilder stbuilder = new StringBuilder();
+            int index = 0;
+            int openCount = 0;
             if (line != null)
             {
-                //while((!IsDone || !getvalue(a,b)) && !isdeleted)
-                if (line.StartsWith("while") && symbolArray.Any(n => line.ToCharArray().Contains(n)))
+                if (line.StartsWith("while") && symbolArray1.Any(n => line.ToCharArray().Contains(n)))
                 {
-
-                    subStr = line.Substring(line.IndexOf('('), line.Length - line.IndexOf('('));
-                    chars = subStr.ToCharArray();
-
+                    substr = line.Substring(line.IndexOf('('), line.LastIndexOf(')') - line.IndexOf('(') + 1);
+                    chars = substr.ToCharArray();
+                    //while(((isactive && ismain>0)) ||(IsDeleted))
                     foreach (var item in chars)
                     {
                         if (item.Equals('('))
                         {
-                            openBracket = true;
+                            openbracket = true;
                             index++;
+                            closeBracket = false;
                             continue;
                         }
                         if (item.Equals(')'))
                         {
                             closeBracket = true;
                             index++;
-                            if (!chars[chars.Length - 1].Equals(item))
+
+                            if (chars[chars.Length - 1] != item)
+                            {
                                 continue;
+                            }
+
                         }
-                        if (item.Equals('&') || closeBracket)
+                        if ((item.Equals('&') && chars[index - 1] == '&'))
                         {
-                            if (!string.IsNullOrEmpty(Convert.ToString(stbuilder)) && stbuilder.Length > 0)
+                            closeBracket = true;
+                        }
+
+                        if ((item.Equals('|') && chars[index - 1] == '|'))
+                        {
+                            closeBracket = true;
+                        }
+
+                        if ((item.Equals('&') && chars[index - 1] == '&') || closeBracket)
+                        {
+                            if (!string.IsNullOrWhiteSpace(Convert.ToString(str)) && str.Length > 0 && !symbolArray1.Any(x => str.ToString().Contains(x)))
                             {
-                                line = line.Replace(stbuilder.ToString(), string.Concat("stringliteral", counter));
-                                dicList.Add(stbuilder.ToString(), string.Concat("stringliteral", counter));
+                                line = line.Replace(str.ToString(), "StringLiteral" + counter);
+                                strList.Add(string.Concat("StringLiteral", counter), str.ToString());
                                 counter++;
                                 index++;
+                                closeBracket = false;
                             }
-                            stbuilder.Clear();
-                        }
-                        if (item.Equals('|') || closeBracket)
-                        {
-                            if (!string.IsNullOrEmpty(Convert.ToString(stbuilder)) && stbuilder.Length > 0)
+                            else
                             {
-                                line = line.Replace(stbuilder.ToString(), string.Concat("stringliteral", counter));
-                                dicList.Add(stbuilder.ToString(), string.Concat("stringliteral", counter));
+                                index--;
+                            }
+                            str.Clear();
+                        }
+
+                        if ((item.Equals('|') && chars[index - 1] == '|') || closeBracket)
+                        {
+                            if (!string.IsNullOrWhiteSpace(Convert.ToString(str)) && str.Length > 0 && !symbolArray1.Any(x => str.ToString().Contains(x)))
+                            {
+                                line = line.Replace(str.ToString(), "StringLiteral" + counter);
+                                strList.Add(string.Concat("StringLiteral", counter), str.ToString());
+
                                 counter++;
                                 index++;
+                                closeBracket = false;
                             }
-                            stbuilder.Clear();
+                            else
+                            {
+                                index--;
+                            }
+                            str.Clear();
                         }
-                        if (!item.Equals('&') && !item.Equals('|'))
+                        if (item != '&' && item != '|')
                         {
-                            stbuilder.Append(item);
+                            str.Append(item);
                             index++;
                         }
                         else
                             index++;
+
                     }
-
-
                 }
-
-
-
             }
-
-            dicList = dicList;
+            strList = strList;
             return line;
         }
 
 
 
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        private string CheckWhile(string line)
+        {
+            string subStr = string.Empty;
+            List<char> symbolArray = new List<char>() { '(', ')' };
+            if (line.StartsWith("while") && symbolArray.Any(n => line.ToCharArray().Contains(n)))
+            {
+                if (line.Contains("(("))
+                    subStr = line.Substring(line.IndexOf('(') + 2, line.LastIndexOf(')') - line.IndexOf('(') - 1);
+                else
+                    subStr = line.Substring(line.IndexOf('(') + 1, line.LastIndexOf(')') - line.IndexOf('(') - 1);
 
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="line"></param>
-        ///// <returns></returns>
-        //private string CheckWhile(string line)
-        //{
-        //    string subStr = string.Empty;
-        //    List<char> symbolArray = new List<char>() { '(', ')' };
-        //    if (line.StartsWith("while") && symbolArray.Any(n => line.ToCharArray().Contains(n)))
-        //    {
-        //        if (line.Contains("(("))
-        //            subStr = line.Substring(line.IndexOf('(') + 2, line.LastIndexOf(')') - line.IndexOf('(') - 1);
-        //        else
-        //            subStr = line.Substring(line.IndexOf('(') + 1, line.LastIndexOf(')') - line.IndexOf('(') - 1);
+                line = line.Replace(subStr, ValidateSymbols(subStr, line));
+            }
+            return line;
+        }
+        bool openbracket = false;
+        bool closeBracket = false;
+        bool appendflag = false;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="strSymbol"></param>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        private string ValidateSymbols(string strSymbol, string line)
+        {
 
-        //        line = line.Replace(subStr, ValidateSymbols(subStr, line));
-        //    }
-        //    return line;
-        //}
-
-        ///// <summary>
-        ///// 
-        ///// </summary>
-        ///// <param name="strSymbol"></param>
-        ///// <param name="line"></param>
-        ///// <returns></returns>
-        //private string ValidateSymbols(string strSymbol, string line)
-        //{
-
-        //    string subNotStr = string.Empty;
-        //    string subStringValue = string.Empty;
-        //    StringBuilder strbuilder = new StringBuilder();
-        //    List<char> symbolList = new List<char>() { '=', '<', '>' };
-        //    int counter = 1;
-        //    bool openbracket = false;
-        //    bool closeBracket = false;
-
-        //    string[] strSymbolList = strSymbol.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
+            string subNotStr = string.Empty;
+            string subStringValue = string.Empty;
+            StringBuilder strbuilder = new StringBuilder();
+            List<char> symbolList = new List<char>() { '=', '<', '>' };
+            int counter = 1;
 
 
-        //    if (strSymbol.Contains('!') && !strSymbol.Contains("&&") && !strSymbol.Contains("||"))
-        //    {
-        //        if (strSymbol.Contains(')'))
-        //        {
-        //            if (strSymbol[strSymbol.LastIndexOf(')') - 1].Equals(')'))
-        //            {
-        //                strSymbol = strSymbol.Substring(1, strSymbol.Length - 2);
-        //                closeBracket = true;
-        //            }
-        //            strSymbol = strSymbol.Replace(strSymbol,
-        //                closeBracket ? string.Concat(strSymbol, "!=", 0, ')') : string.Concat(strSymbol, "!=", 0));
-        //            closeBracket = false;
-        //        }
-        //        else
-        //        {
-        //            subNotStr = strSymbol.Substring(1, strSymbol.Length - 1);
-        //            strSymbol = strSymbol.Replace(strSymbol, string.Concat(subNotStr, "!=", 0));
-        //        }
-        //        return strSymbol;
-        //    }
-        //    if (strSymbolList.Length > 0 && (strSymbol.Contains("&&") || strSymbol.Contains("||")))
-        //    {
-        //        string subItem = string.Empty;
-        //        string value = string.Empty;
-        //        foreach (var itemStr in strSymbolList)
-        //        {
-        //            if (itemStr.Contains("||"))
-        //            {
-        //                string[] strOR = itemStr.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-
-        //                foreach (string item in strOR)
-        //                {
-        //                    if (item.StartsWith("("))
-        //                    {
-        //                        subItem = item.Replace("(", string.Empty);
-        //                        openbracket = true;
-        //                    }
-
-        //                    else if (item.Contains(')'))
-        //                    {
-
-        //                        if (item[item.LastIndexOf(')') - 1] != ')')
-        //                        {
-        //                            subItem = item.Replace(")", string.Empty);
-        //                            closeBracket = true;
-        //                        }
-        //                        else
-        //                            subItem = item;
-        //                    }
-        //                    else
-        //                    {
-        //                        subItem = item;
-        //                    }
-        //                    if (symbolList.Any(x => item.ToCharArray().Contains(x)))
-        //                    {
-        //                        strbuilder.Append(item);
-        //                    }
-        //                    else
-        //                    {
-        //                        value = ValidateSymbols(subItem.Trim(), line);
-        //                        if (openbracket)
-        //                            value = '(' + value;
-        //                        else if (closeBracket)
-        //                            value = value + ')';
-
-        //                        strbuilder.Append(value);
+            string[] strSymbolList = strSymbol.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
 
 
-        //                    }
-        //                    if (counter < strOR.Length)
-        //                        strbuilder.Append(" || ");
-        //                    counter++;
-        //                }
-        //            }
+            if (strSymbol.Contains('!') && !strSymbol.Contains("&&") && !strSymbol.Contains("||"))
+            {
+                if (strSymbol.Contains(')'))
+                {
+                    if (strSymbol[strSymbol.LastIndexOf(')') - 1].Equals(')'))
+                    {
+                        strSymbol = strSymbol.Substring(1, strSymbol.Length - 2);
+                        closeBracket = true;
+                    }
+                    strSymbol = strSymbol.Replace(strSymbol,
+                        closeBracket ? string.Concat(strSymbol, "!=", 0, ')') : string.Concat(strSymbol, "!=", 0));
+                    if (strSymbol.Trim().StartsWith("!"))
+                    {
+                        strSymbol = strSymbol.Substring(strSymbol.IndexOf('!') + 1,
+                            strSymbol.Length - strSymbol.IndexOf('!') - 1);
+                    }
 
-        //            else
-        //            {
-        //                if (itemStr.StartsWith("("))
-        //                {
-        //                    subItem = itemStr.Replace("(", string.Empty);
-        //                    openbracket = true;
-        //                }
-        //                else if (itemStr.Contains(')'))
-        //                {
-        //                    if (itemStr[itemStr.LastIndexOf(')') - 1] != ')')
-        //                    {
-        //                        subItem = itemStr.Replace(")", string.Empty);
-        //                        closeBracket = true;
-        //                    }
-        //                    else
-        //                        subItem = itemStr;
-        //                }
-        //                else
-        //                {
-        //                    subItem = itemStr;
-        //                }
+                    closeBracket = false;
+                }
+                else
+                {
+                    subNotStr = strSymbol.Substring(1, strSymbol.Length - 1);
+                    strSymbol = strSymbol.Replace(strSymbol, string.Concat(subNotStr, "!=", 0));
+                }
+                return strSymbol;
+            }
+            if (strSymbolList.Length > 0 && (strSymbol.Contains("&&") || strSymbol.Contains("||")))
+            {
+                string subItem = string.Empty;
+                string value = string.Empty;
+                foreach (var itemStr in strSymbolList)
+                {
+                    if (itemStr.Contains("||"))
+                    {
+                        string[] strOR = itemStr.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        foreach (string item in strOR)
+                        {
+                            if (item.Trim().StartsWith("("))
+                            {
+                                openbracket = true;
+                                subItem = item.TrimEnd()
+                                    .Substring(item.IndexOf('(') + 1,
+                                        item.Contains(')') ? item.LastIndexOf(')') - (item.Count(n => n == ')') - 1) : item.LastIndexOf(' ') - 1);
+                                if (item.Contains('(') && !item.Contains(')'))
+                                {
+                                    openbracket = true;
+                                    closeBracket = false;
+                                }
+                                else if (item.Contains(')') && !item.Contains('('))
+                                {
+                                    openbracket = false;
+                                    closeBracket = true;
+                                }
+                            }
+
+                            else if (item.Contains(')'))
+                            {
+
+                                if (item[item.LastIndexOf(')') - 1] != ')')
+                                {
+                                    subItem = item.Substring(0, item.LastIndexOf(')'));
+                                    closeBracket = true;
+                                }
+                                else
+                                    subItem = item;
+                                openbracket = false;
+                            }
+                            else
+                            {
+                                subItem = item;
+                            }
+                            if (symbolList.Any(x => item.ToCharArray().Contains(x)))
+                            {
+                                strbuilder.Append(item);
+                            }
+                            else
+                            {
+                                value = ValidateSymbols(subItem.Trim(), line);
+                                if (openbracket)
+                                    value = '(' + value;
+                                if (closeBracket)
+                                    value = value + ')';
+
+                                strbuilder.Append(value);
 
 
-        //                if (symbolList.Any(x => itemStr.ToCharArray().Contains(x)))
-        //                {
-        //                    strbuilder.Append(string.Concat(" &&", itemStr, "&&"));
-        //                }
-        //                else
-        //                {
-        //                    value = ValidateSymbols(subItem.Trim(), line);
-        //                    if (openbracket)
-        //                        value = '(' + value;
-        //                    else if (closeBracket)
-        //                        value = value + ')';
-        //                    strbuilder.Append(string.Concat(" &&", value, "&&"));
-        //                }
-        //            }
-        //        }
+                            }
+                            if (counter < strOR.Length)
+                                strbuilder.Append(" || ");
+                            counter++;
+                        }
+                    }
 
-        //        subStringValue = strbuilder.ToString();
+                    else
+                    {
+                        if (itemStr.Trim().StartsWith("("))
+                        {
+                            if (strSymbol.Count(n => n == '(') == strSymbol.Count(n => n == ')'))
+                                subItem = itemStr.TrimEnd()
+                                    .Substring(itemStr.IndexOf('(') + 1, itemStr.LastIndexOf(')') - 1);
+                            else
+                            {
 
-        //        if (subStringValue.Trim().StartsWith("&&"))
-        //        {
-        //            subStringValue = subStringValue.Substring(3, strbuilder.ToString().Length - 3);
+                                subItem = itemStr.TrimEnd()
+                                    .Substring(itemStr.IndexOf('(') + 1, itemStr.Trim().Contains(')') ? itemStr.LastIndexOf(')') : itemStr.LastIndexOf(' ') - 2);
+                                appendflag = true;
+                                closeBracket = true;
+                            }
+                            openbracket = true;
 
-        //        }
-        //        if (subStringValue.Trim().EndsWith("&&"))
-        //        {
-        //            subStringValue = subStringValue.Substring(0, subStringValue.LastIndexOf('&') - 1);
-        //        }
-        //        if (subStringValue.Trim().Contains("&& &&"))
-        //        {
-        //            subStringValue = subStringValue.Replace("&& &&", "&&");
-        //        }
-        //        return subStringValue;
-        //    }
-        //    else
-        //    {
-        //        if (strSymbol.Contains(')'))
-        //        {
-        //            if (strSymbol[strSymbol.LastIndexOf(')') - 1].Equals(')'))
-        //            {
-        //                strSymbol = strSymbol.Substring(0, strSymbol.Length - 1);
-        //                closeBracket = true;
-        //            }
-        //        }
-        //        strSymbol = strSymbol.Replace(strSymbol, closeBracket ? string.Concat(strSymbol, ">", 0, ')') : string.Concat(strSymbol, ">", 0));
-        //        closeBracket = false;
-        //        return strSymbol;
-        //    }
-        //}
+                        }
+                        else if (itemStr.Contains(')'))
+                        {
+                            if (itemStr[itemStr.LastIndexOf(')') - 1] != ')')
+                            {
+                                subItem = itemStr.Substring(0, itemStr.LastIndexOf(')'));
+                                closeBracket = true;
+                            }
+                            else
+                            {
+                                subItem = itemStr;
+                            }
+                            openbracket = false;
+                        }
+                        else
+                        {
+                            subItem = itemStr;
+                        }
+
+
+                        if (symbolList.Any(x => itemStr.ToCharArray().Contains(x)))
+                        {
+                            strbuilder.Append(string.Concat(" &&", itemStr, "&&"));
+                        }
+                        else
+                        {
+                            value = ValidateSymbols(subItem.Trim(), line);
+                            if (openbracket)
+                                value = '(' + value;
+                            if (closeBracket)
+                                value = value + ')';
+                            strbuilder.Append(string.Concat(" &&", value, "&&"));
+                        }
+                    }
+                }
+
+                subStringValue = strbuilder.ToString();
+
+                if (subStringValue.Trim().StartsWith("&&"))
+                {
+                    subStringValue = subStringValue.Substring(3, strbuilder.ToString().Length - 3);
+
+                }
+                if (subStringValue.Trim().EndsWith("&&"))
+                {
+                    subStringValue = subStringValue.Substring(0, subStringValue.LastIndexOf('&') - 1);
+                }
+                if (subStringValue.Trim().Contains("&& &&"))
+                {
+                    subStringValue = subStringValue.Replace("&& &&", "&&");
+                }
+                return subStringValue;
+            }
+            else if (strSymbol.Contains("="))
+            {
+                return strSymbol;
+            }
+
+            else
+            {
+                if (strSymbol.Contains(')'))
+                {
+                    if (strSymbol[strSymbol.LastIndexOf(')') - 1].Equals(')'))
+                    {
+                        if (strSymbol.Count(n => n == '(') == strSymbol.Count(n => n == ')'))
+                        {
+                            appendflag = true;
+                        }
+                        strSymbol = strSymbol.Substring(0, strSymbol.Length - (strSymbol.Count(n => n == ')') - 1));
+                        closeBracket = true;
+                    }
+                    else
+                    {
+                        strSymbol = strSymbol.Replace(')', ' ');
+                        closeBracket = true;
+                        appendflag = true;
+                    }
+                }
+
+
+
+                strSymbol = strSymbol.Replace(strSymbol,
+                    closeBracket ? !appendflag ? string.Concat(strSymbol, ">", 0, ')') : string.Concat(strSymbol, ">", 0, "))") : string.Concat(strSymbol, ">", 0));
+                closeBracket = false;
+                return strSymbol;
+            }
+        }
+
+
+
+
 
 
 
@@ -488,10 +587,12 @@ namespace AVSToJVSConversion.ViewModel
             {
                 if (string.IsNullOrEmpty(LibraryPath))
                 {
+                    //ProgressStatus = Directory.EnumerateFiles(AVSPath, "*.mls").Count();
                     IsSuccess = inputProcessor2.Process(AVSPath, AVSPath, JVSPath);
                 }
                 else
                 {
+                    //ProgressStatus = Directory.EnumerateFiles(AVSPath, "*.mls").Count();
                     IsSuccess = inputProcessor2.Process(AVSPath, LibraryPath, JVSPath);
                 }
                 if (IsSuccess)
