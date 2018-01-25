@@ -173,13 +173,95 @@ namespace AVSToJVSConversion.ViewModel
                     ErrorMessage = string.Empty;
                     Status = false;
 
-                 //   string str = CheckWhile("while((!IsDone || !getvalue(a,b)) && !isdeleted)");
+                    string str = CheckWhileNew("while((!IsDone || !getvalue(a,b)) && !isdeleted)");
 
                     break;
 
             }
 
         }
+
+
+        private string CheckWhileNew(string line)
+        {
+            string subStr = string.Empty;
+            List<char> symbolArray = new List<char>() { '(', ')' };
+            Dictionary<string, string> dicList = new Dictionary<string, string>();
+            char[] chars;
+            bool openBracket = false;
+            bool closeBracket = false;
+            int index = 0;
+            int counter = 1;
+            StringBuilder stbuilder = new StringBuilder();
+            if (line != null)
+            {
+                //while((!IsDone || !getvalue(a,b)) && !isdeleted)
+                if (line.StartsWith("while") && symbolArray.Any(n => line.ToCharArray().Contains(n)))
+                {
+
+                    subStr = line.Substring(line.IndexOf('('), line.Length - line.IndexOf('('));
+                    chars = subStr.ToCharArray();
+
+                    foreach (var item in chars)
+                    {
+                        if (item.Equals('('))
+                        {
+                            openBracket = true;
+                            index++;
+                            continue;
+                        }
+                        if (item.Equals(')'))
+                        {
+                            closeBracket = true;
+                            index++;
+                            if (!chars[chars.Length - 1].Equals(item))
+                                continue;
+                        }
+                        if (item.Equals('&') || closeBracket)
+                        {
+                            if (!string.IsNullOrEmpty(Convert.ToString(stbuilder)) && stbuilder.Length > 0)
+                            {
+                                line = line.Replace(stbuilder.ToString(), string.Concat("stringliteral", counter));
+                                dicList.Add(stbuilder.ToString(), string.Concat("stringliteral", counter));
+                                counter++;
+                                index++;
+                            }
+                            stbuilder.Clear();
+                        }
+                        if (item.Equals('|') || closeBracket)
+                        {
+                            if (!string.IsNullOrEmpty(Convert.ToString(stbuilder)) && stbuilder.Length > 0)
+                            {
+                                line = line.Replace(stbuilder.ToString(), string.Concat("stringliteral", counter));
+                                dicList.Add(stbuilder.ToString(), string.Concat("stringliteral", counter));
+                                counter++;
+                                index++;
+                            }
+                            stbuilder.Clear();
+                        }
+                        if (!item.Equals('&') && !item.Equals('|'))
+                        {
+                            stbuilder.Append(item);
+                            index++;
+                        }
+                        else
+                            index++;
+                    }
+
+
+                }
+
+
+
+            }
+
+            dicList = dicList;
+            return line;
+        }
+
+
+
+
 
         ///// <summary>
         ///// 

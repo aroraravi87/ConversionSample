@@ -89,7 +89,7 @@ namespace AVSToJVSConversion.BLL
                         _operations.RemoveIncludeListStatement(_dtForFile);
                         _dtForInclude = _initializeTables.GetDtForInclude();
                         _operations.ConvertInitialization(_dtForFile, _dtForInclude, true);
-                        _operations.InitlializedVariables(_dtForFile);
+                         _operations.InitlializedVariables(_dtForFile);
                         if (_dtForMethodsAvailable == null)
                         {
                             _dtForMethodsAvailable = _initializeTables.GetDtForMethodPresent();
