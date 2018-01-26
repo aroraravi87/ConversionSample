@@ -46,6 +46,8 @@ namespace AVSToJVSConversion.BLL
             public string TypeName { get; set; }
         }
 
+
+       
         public Operations()
         {
             _initializeTables = new InitializeTables();
@@ -65,27 +67,36 @@ namespace AVSToJVSConversion.BLL
             _getVariableDictionary.Add("Transaction ",
                 new DataTypes() { TypeName = "com.olf.openjvs.Transaction", TypeValue = "Util.NULL_TRAN" });
 
-            string str = CheckInitilize("Table empty,tran_list = tblMasterDetails,empty1;");
+            //string str = CheckInitilize("Table empty,tran_list = GetTable(a,b);int empty1,tb1;String tb2=gettable(main),tb234;");
+            string prevsElementType;
+            string str = CheckInitilize("int empty1,tb1=GetIntN(a,b);String tb2='test',tb234;Table tbnew,tb=new TableNew(),DT,",out prevsElementType);
 
         }
 
-        private string CheckInitilize(string line)
+        private string CheckInitilize(string line,out string prevsElementType)
         {
-            char[] chars = line.ToCharArray();
+            char[] chars;
             bool equalFlag = false;
             bool equalSpaceFlag = false;
             bool skipFlag = false;
             string ElementName = string.Empty;
             DataTypes DicOutput = new DataTypes();
             int additionCount = 0;
-            bool intilized = false;
             string ElementType = string.Empty;
             StringBuilder sb = new StringBuilder();
-            int columnindex = 0;
+            StringBuilder sb1 = new StringBuilder();
+            StringBuilder sb3 = new StringBuilder();
+            bool openBracket = false;
+            bool closeBracket = false;
             int currentposition = 0;
-
+            int counter = 0;
             bool AddFlag = false;
-            //  TablePtr tran_list = tblMasterDetails, empty;
+            bool AddCounter = false;
+            bool ItemFlag = false;
+
+            chars = line.ToCharArray();
+            prevsElementType = string.Empty;
+
             for (int i = 0; i < chars.Length; i++)
             {
                 if (i < chars.Length - 1)
@@ -95,16 +106,38 @@ namespace AVSToJVSConversion.BLL
                         sb.Append(chars[i]);
                         continue;
                     }
-
+                    currentposition = i;
                     _getVariableDictionary.Keys.Any(
-                        type => _utility.CheckVariableTypeName(string.Concat(sb.ToString(), ' '), type, out ElementType));
+                type => _utility.CheckVariableTypeName(string.Concat(sb.ToString(), ' '), type, out ElementType));
+                }
+
+                if (chars[i].Equals('('))
+                {
+                    openBracket = true;
+
+                }
+
+                if (chars[i].Equals(')'))
+                {
+
+                    closeBracket = true;
+                }
+                if (!chars[currentposition].Equals(','))
+                {
+                    sb1.Append(chars[currentposition]);
+                }
+                else if (chars[currentposition].Equals(',') && openBracket && !closeBracket)
+                {
+                    sb1.Append(chars[currentposition]);
+                    continue;
                 }
                 if (!string.IsNullOrWhiteSpace(ElementType))
                 {
                     _getVariableDictionary.TryGetValue(ElementType, out DicOutput);
 
-
                     ElementName = ElementType;
+                    prevsElementType = ElementName;
+
                     sb.Clear();
                     skipFlag = true;
                     continue;
@@ -123,22 +156,14 @@ namespace AVSToJVSConversion.BLL
 
                 if (chars[i].Equals(','))
                 {
-                    columnindex = i;
-
-                    if (!equalFlag)
+                    if (!sb1.ToString().Contains('='))
                     {
-                        string str = string.Concat("=", DicOutput.TypeValue);
-                        line = line.Insert(i + additionCount, str);
-                        additionCount = additionCount + str.Length;
                         AddFlag = true;
-                        continue;
-
-
+                        equalFlag = false;
                     }
-                    AddFlag = true;
-                }
-                if (chars[i].Equals(';'))
-                {
+                    sb1.Clear();
+
+
                     if (!equalFlag && AddFlag)
                     {
                         string str = string.Concat("=", DicOutput.TypeValue);
@@ -147,15 +172,32 @@ namespace AVSToJVSConversion.BLL
                         continue;
                     }
 
+                    currentposition = counter;
+                }
+                if (chars[i].Equals(';'))
+                {
+                    if (!sb1.ToString().Contains('='))
+                    {
+                        AddFlag = true;
+                        equalFlag = false;
+                    }
+                    sb1.Clear();
+                    skipFlag = false;
+                    if (!equalFlag && AddFlag)
+                    {
+                        string str = string.Concat("=", DicOutput.TypeValue);
+                        line = line.Insert(i + additionCount, str);
+                        additionCount = additionCount + str.Length;
+                        continue;
+                    }
                 }
 
-                if (char.IsLetterOrDigit(chars[i]))
-                {
-                    sb.Append(chars[i]);
-                }
+              
+
 
             }
-            return line;
+            sb3.Append(line);
+            return sb3.ToString();
         }
 
 
@@ -1357,6 +1399,8 @@ namespace AVSToJVSConversion.BLL
                 throw ex;
             }
         }
+
+        
 
         public static string ConvertDeclaredValues(string line, string elementType, string replaceval,
             bool appendDataLabel)
