@@ -110,7 +110,6 @@
     <Compile Include="Common\CustomConverter.cs" />
     <Compile Include="BLL\IncludeFileHandler.cs" />
     <Compile Include="Common\Enumerations.cs" />
-    <Compile Include="Common\Helpers.cs" />
     <Compile Include="DLL\DBConnection.cs" />
     <Compile Include="BLL\InitializeTables.cs" />
     <Compile Include="BLL\InputProcessor.cs" />

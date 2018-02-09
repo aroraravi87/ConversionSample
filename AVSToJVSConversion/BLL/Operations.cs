@@ -2,8 +2,10 @@ using System.Data;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System;
 
@@ -18,6 +20,7 @@ File Name:              (AVS_To_JVS.mls)
 Description:       
 
 *****************************************************************************/
+using System.Windows.Shapes;
 using AVSToJVSConversion.Common;
 using AVSToJVSConversion.DLL;
 
@@ -43,6 +46,8 @@ namespace AVSToJVSConversion.BLL
             public string TypeName { get; set; }
         }
 
+
+       
         public Operations()
         {
             _initializeTables = new InitializeTables();
@@ -62,13 +67,13 @@ namespace AVSToJVSConversion.BLL
             _getVariableDictionary.Add("Transaction ",
                 new DataTypes() { TypeName = "com.olf.openjvs.Transaction", TypeValue = "Util.NULL_TRAN" });
 
-
-            //string prevsElementType;
-            //string str = CheckInitilize("int empty1,tb1=GetIntN(a,b);String tb2='test',tb234;Table tbnew,tb=new TableNew(),DT,", out prevsElementType);
+            //string str = CheckInitilize("Table empty,tran_list = GetTable(a,b);int empty1,tb1;String tb2=gettable(main),tb234;");
+            string prevsElementType;
+            string str = CheckInitilize("int empty1,tb1=GetIntN(a,b);String tb2='test',tb234;Table tbnew,tb=new TableNew(),DT,",out prevsElementType);
 
         }
 
-        private string CheckInitilize(string line, out string prevsElementType)
+        private string CheckInitilize(string line,out string prevsElementType)
         {
             char[] chars;
             bool equalFlag = false;
@@ -186,10 +191,15 @@ namespace AVSToJVSConversion.BLL
                         continue;
                     }
                 }
+
+              
+
+
             }
             sb3.Append(line);
             return sb3.ToString();
         }
+
 
 
         public DataTable GetDataTableForFile(string file)
@@ -712,8 +722,8 @@ namespace AVSToJVSConversion.BLL
             foreach (DataRow drs in dtForFile.Rows)
             {
                 line = drs[1].ToString().Trim();
-                if (line.Contains("#INCLUDE_") || line.Contains("#include ") || line.Contains("#sdbg") ||
-                    line.Contains("#SDBG"))
+                if (line.Contains("#INCLUDE_") || line.Contains("#include ") || line.Contains("#sdbg ") ||
+                    line.Contains("#SDBG "))
                 {
                     drs[1] = "";
                 }
@@ -738,8 +748,8 @@ namespace AVSToJVSConversion.BLL
             {
                 completeLine = completeLine + drs[0].ToString();
                 line = line + " " + drs[1].ToString().Trim();
-                commentSecondPart = commentSecondPart + commentFirstPart + drs[3].ToString();
-                commentFirstPart = drs[2].ToString();
+                commentFirstPart = commentFirstPart + drs[2].ToString();
+                commentSecondPart = commentSecondPart + drs[3].ToString();
 
                 if (line.Trim().Equals(""))
                 {
@@ -779,8 +789,8 @@ namespace AVSToJVSConversion.BLL
             {
                 completeLine = completeLine + drs[0].ToString();
                 line = line + " " + drs[1].ToString().Trim();
-                commentSecondPart = commentSecondPart + commentFirstPart + drs[3].ToString();
-                commentFirstPart = drs[2].ToString();
+                commentFirstPart = commentFirstPart + drs[2].ToString();
+                commentSecondPart = commentSecondPart + drs[3].ToString();
 
                 if (line.Trim().Equals(""))
                 {
@@ -887,7 +897,7 @@ namespace AVSToJVSConversion.BLL
         }
 
         public DataTable GetMethodsListInFile(DataTable dtForFileOfInclude, string fileName,
-            DataTable dtForMethodsAvailable, int containsGlobalTable)
+            DataTable dtForMethodsAvailable)
         {
             bool methodStartFlag = false;
             bool methodNamefoundFlag = false;
@@ -917,7 +927,6 @@ namespace AVSToJVSConversion.BLL
                         dr[0] = fileName;
                         dr[1] = methodName;
                         dr[2] = methodParameter;
-                        dr[3] = containsGlobalTable;
                         methodNamefoundFlag = true;
                     }
                 }
@@ -1036,6 +1045,7 @@ namespace AVSToJVSConversion.BLL
 
         public void ConvertInitialization(DataTable dtForFile, DataTable dtForInclude, bool shoudInclude)
         {
+
             bool includeFlag;
             try
             {
@@ -1077,17 +1087,18 @@ namespace AVSToJVSConversion.BLL
                                 .Replace(_dataReader.GetValue(0).ToString(), _dataReader.GetValue(1).ToString());
                         }
                     }
-                    _utility.closeSQLConnection(_conn, _dataReader);
+                    _dataReader.Close();
+                    DbConnection.CloseSqlConnection(_conn);
                 }
+
+
             }
             catch (Exception ex)
             {
                 throw ex;
             }
-            finally
-            {
-                _utility.closeSQLConnection(_conn, _dataReader);
-            }
+
+
         }
 
         /// <summary>
@@ -1339,7 +1350,7 @@ namespace AVSToJVSConversion.BLL
                                 }
 
                                 _getVariableDictionary.Keys.Any(
-                                    type => _utility.CheckVariableTypeName(sb.ToString(), type, out ElementType));
+                                           type => _utility.CheckVariableTypeName(sb.ToString(), type, out ElementType));
 
                                 if (ElementType != null)
                                 {
@@ -1388,6 +1399,8 @@ namespace AVSToJVSConversion.BLL
                 throw ex;
             }
         }
+
+        
 
         public static string ConvertDeclaredValues(string line, string elementType, string replaceval,
             bool appendDataLabel)
@@ -1629,7 +1642,19 @@ namespace AVSToJVSConversion.BLL
                         includeFlag = true;
                         while (_dataReader.Read())
                         {
-                            _utility.AddInIncludeDT(dtForInclude, _dataReader.GetValue(3).ToString(), _dataReader.GetValue(1).ToString());
+                            foreach (DataRow drs in dtForInclude.Rows)
+                            {
+                                if (drs[0].ToString().Equals(_dataReader.GetValue(1).ToString()))
+                                {
+                                    includeFlag = false;
+                                }
+                            }
+                            if (includeFlag)
+                            {
+                                DataRow drs = dtForInclude.Rows.Add();
+                                drs[0] = _dataReader.GetValue(1).ToString();
+                                drs[1] = _dataReader.GetValue(3).ToString();
+                            }
                             if (_utility.GetCount(drs2[1].ToString(), methodName) > 1)
                             {
                                 string line = drs2[1].ToString().Replace("  ", " ");
@@ -1694,7 +1719,8 @@ namespace AVSToJVSConversion.BLL
                             }
                             break;
                         }
-                        _utility.closeSQLConnection(_conn, _dataReader);
+                        _dataReader.Close();
+                        DbConnection.CloseSqlConnection(_conn);
                     }
                 }
             }
@@ -1702,16 +1728,14 @@ namespace AVSToJVSConversion.BLL
             {
                 throw ex;
             }
-            finally
-            {
-                _utility.closeSQLConnection(_conn, _dataReader);
-            }
         }
 
         public void ConvertNonStaticMethod(DataTable dtForFile, DataTable dtForMethodsAvailable, DataTable dtForInclude,
             string fileName)
         {
             string[] methodsInaline;
+
+
 
             try
             {
@@ -1740,6 +1764,8 @@ namespace AVSToJVSConversion.BLL
         public void NonStaticMethodConversion(string[] methodsInline, DataRow drs2, DataTable dtForMethodsAvailable,
             DataTable dtForInclude, string fileName)
         {
+
+
             string methodName;
             string argumentName;
             string sql;
@@ -1791,6 +1817,8 @@ namespace AVSToJVSConversion.BLL
                     }
                     if (!continueFlag)
                     {
+
+
                         _query = string.Format("{0}{1}", Constants.AVSJVSNOMAPPINGSQL,
                             " and avsmethod = '" + methodName + "'");
 
@@ -1798,7 +1826,21 @@ namespace AVSToJVSConversion.BLL
                         includeFlag = true;
                         while (_dataReader.Read())
                         {
-                            _utility.AddInIncludeDT(dtForInclude, _dataReader.GetValue(3).ToString(), _dataReader.GetValue(1).ToString());
+                            foreach (DataRow drs in dtForInclude.Rows)
+                            {
+                                if (drs[0].ToString().Equals(_dataReader.GetValue(1).ToString()))
+                                {
+                                    includeFlag = false;
+                                }
+                            }
+                            if (includeFlag)
+                            {
+                                DataRow drs = dtForInclude.Rows.Add();
+                                drs[0] = _dataReader.GetValue(1).ToString();
+                                drs[1] = _dataReader.GetValue(3).ToString();
+
+                            }
+
                             bracketCount = 0;
                             argumentName = "";
 
@@ -1864,17 +1906,16 @@ namespace AVSToJVSConversion.BLL
                             break;
                         }
                     }
-                    _utility.closeSQLConnection(_conn, _dataReader);
+                    _dataReader.Close();
+                    DbConnection.CloseSqlConnection(_conn);
+
+
                 }
 
             }
             catch (Exception ex)
             {
                 throw ex;
-            }
-            finally
-            {
-                _utility.closeSQLConnection(_conn, _dataReader);
             }
         }
 
@@ -2138,12 +2179,19 @@ namespace AVSToJVSConversion.BLL
 
         public void AddPublicStaticInLibraryMethods(DataTable dtForFile)
         {
+            bool mainCheck;
+
             bool methodNamefoundFlag = false;
             bool methodStartFlag = false;
             int openCurlyBraces = 0;
 
             try
             {
+                mainCheck = CheckMain(dtForFile);
+                if (mainCheck)
+                {
+                    return;
+                }
                 foreach (DataRow drs in dtForFile.Rows)
                 {
                     if (drs[1].Equals(""))
@@ -2153,30 +2201,14 @@ namespace AVSToJVSConversion.BLL
 
                     if (!methodStartFlag && !methodNamefoundFlag)
                     {
-                        if (!_utility.CheckMain(drs[1].ToString()))
-                        {
-                            drs[1] = "public static " + drs[1].ToString();
-                        }
+                        drs[1] = "public static " + drs[1].ToString();
                     }
 
-                    if (!methodNamefoundFlag && !methodStartFlag && _utility.DetectMethodNameStartPointer(drs[1].ToString()))
+                    if (!methodNamefoundFlag && !methodStartFlag &&
+                        _utility.DetectMethodNameStartPointer(drs[1].ToString()))
                     {
-                        bool ignorefound = false;
-
-                        if (drs[1].ToString().IndexOf("=") > drs[1].ToString().IndexOf(")"))
-                        {
-                            ignorefound = true;
-                        }
-                        if (drs[1].ToString().IndexOf(";") > drs[1].ToString().IndexOf(")") && drs[1].ToString().IndexOf("=") == -1)
-                        {
-                            ignorefound = true;
-                        }
-                        if ((!drs[1].ToString().Contains("=") && !drs[1].ToString().Contains("+")) || ignorefound)
-                        {
-                            methodNamefoundFlag = true;
-                        }
+                        methodNamefoundFlag = true;
                     }
-
                     if (methodNamefoundFlag)
                     {
                         if (_utility.DetectMethodStartPointer(drs[1].ToString()))
@@ -2206,46 +2238,50 @@ namespace AVSToJVSConversion.BLL
             }
         }
 
+        public bool CheckMain(DataTable dtForFile)
+        {
+            foreach (DataRow drs in dtForFile.Rows)
+            {
+                if (drs[1].ToString().Contains(" main()") ||
+                    (drs[1].ToString().Contains(" main ") && drs[1].ToString().Contains(" ()")))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public void GenerateOutputFile(DataTable dtForFile, DataTable dtForInclude, DataTable dtForLiterals,
-            string outputPath, string outputFileName, DataTable dtForMethodsAvailable)
+            string outputPath, string outputFileName)
         {
             bool mainCheck;
             bool argtCheck = false;
-            bool returntCheck = false;
-            bool shouldAddGlobalTable = false;
+            int lineaftermain = -1;
             bool breakFlag = false;
             bool firstValidLineFlag = false;
             string line;
-            string classNames;
-
-            DataRow[] includeClassNames;
 
             try
             {
-                includeClassNames = dtForMethodsAvailable.Select("FileName <> '" + outputFileName + "' AND ContainsGlobalTable = '" + 1 + "'");
-
                 string fileName = outputPath + "\\" + outputFileName.Replace(".mls", "") + ".java";
-                StreamWriter writer;
+                System.IO.StreamWriter writer;
                 writer = new System.IO.StreamWriter(fileName);
 
-                argtCheck = _utility.CheckGlobalTable(dtForFile, "argt");
-                returntCheck = _utility.CheckGlobalTable(dtForFile, "returnt");
-                mainCheck = _utility.CheckMain(dtForFile);
-
-                if (argtCheck || returntCheck)
-                {
-                    _utility.AddInIncludeDT(dtForInclude, "com.olf.openjvs.Table", "Table");
-                    shouldAddGlobalTable = true;
-                }
-                _utility.AddInIncludeDT(dtForInclude, "com.olf.openjvs.OException", "OException");
-                if (mainCheck)
-                {
-                    _utility.AddInIncludeDT(dtForInclude, "com.olf.openjvs.IContainerContext", "IContainerContext");
-                    _utility.AddInIncludeDT(dtForInclude, "com.olf.openjvs.IScript", "IScript");
-                }
                 foreach (DataRow drs in dtForInclude.Rows)
                 {
                     writer.Write("import " + drs[1] + ";\n");
+                }
+                writer.Write("import com.olf.openjvs.OException;\n");
+
+                mainCheck = CheckMain(dtForFile);
+
+                if (mainCheck)
+                {
+                    writer.Write("import com.olf.openjvs.IContainerContext;\n");
+                    writer.Write("import com.olf.openjvs.IScript;\n");
+
+                    writer.Write("\n");
+
                 }
 
                 foreach (DataRow drs in dtForFile.Rows)
@@ -2259,12 +2295,12 @@ namespace AVSToJVSConversion.BLL
                         break;
                     }
 
-                    if (drs[1].ToString().Equals("") && drs[2].ToString().Equals("") && drs[3].ToString().Equals(""))
+                    if (drs[1].Equals("") && drs[2].Equals("") && drs[3].Equals(""))
                     {
                         continue;
                     }
 
-                    if (!drs[1].ToString().Equals(""))
+                    if (!drs[1].Equals(""))
                     {
                         breakFlag = true;
                     }
@@ -2273,25 +2309,20 @@ namespace AVSToJVSConversion.BLL
 
                 if (mainCheck)
                 {
-                    writer.Write("\npublic class " + outputFileName.Replace(".mls", "") + " implements IScript" + "\n{\n");
+                    writer.Write("public class " + outputFileName.Replace(".mls", "") + " implements IScript" + "\n");
+                    writer.Write("{" + "\n");
+                    argtCheck = Checkargt(dtForFile);
                 }
                 else
                 {
-                    writer.Write("\npublic class " + outputFileName.Replace(".mls", ""));
-                    writer.Write("\n{\n");
-                    writer.Write("\npublic " + outputFileName.Replace(".mls", "") + "(IContainerContext context) throws OException\n{");
-                    writer.Write("\nargt=context.getArgumentsTable();");
-                    writer.Write("\nreturnt=context.getReturnTable();\n");
-                    writer.Write("}\n");
+                    writer.Write("\n");
+                    writer.Write("public class " + outputFileName.Replace(".mls", "") + "\n");
+                    writer.Write("{" + "\n");
                 }
 
                 if (argtCheck)
                 {
-                    writer.Write("public static Table argt;\n");
-                }
-                if (returntCheck)
-                {
-                    writer.Write("public static Table returnt;\n");
+                    writer.Write("Table argt;\n");
                 }
 
                 foreach (DataRow drs in dtForFile.Rows)
@@ -2300,61 +2331,57 @@ namespace AVSToJVSConversion.BLL
                     {
                         continue;
                     }
-                    if (mainCheck && drs[1].ToString().Contains("void ") && _utility.CheckMain(drs[1].ToString()))
+                    if (lineaftermain > -1)
+                    {
+                        lineaftermain++;
+                    }
+                    if (mainCheck && drs[1].ToString().Contains("void ") &&
+                        drs[1].ToString().Contains(" main") && drs[1].ToString().Contains("()"))
                     {
                         line = drs[1].ToString();
                         drs[1] = line.Substring(0, line.IndexOf("void ")) +
                                  "public void execute(IContainerContext context) " +
                                  line.Substring(line.IndexOf(")") + 1);
+                        if (argtCheck)
+                        {
+                            lineaftermain = 0;
+                        }
                     }
-                    if (mainCheck && drs[1].ToString().Contains("int ") && _utility.CheckMain(drs[1].ToString()))
+                    if (mainCheck && drs[1].ToString().Contains("int ") &&
+                        drs[1].ToString().Contains(" main") && drs[1].ToString().Contains("()"))
                     {
                         line = drs[1].ToString();
                         drs[1] = line.Substring(0, line.IndexOf("int ")) +
                                  "public void execute(IContainerContext context) " +
                                  line.Substring(line.IndexOf(")") + 1);
-                    }
-
-                    if (mainCheck && drs[1].ToString().Contains("{"))
-                    {
-                        int indexOfBracket = drs[1].ToString().IndexOf("{");
-                        foreach (DataRow dataRow in includeClassNames)
+                        if (argtCheck)
                         {
-                            drs[1] = drs[1].ToString().Substring(0, indexOfBracket + 1) +
-                                     "\n" + dataRow[0].ToString() + " " + dataRow[0].ToString() + "= new " + dataRow[0].ToString() + ";\n" +
-                                     drs[1].ToString().Substring(indexOfBracket + 1);
+                            lineaftermain = 0;
                         }
-                    }
-
-                    if (shouldAddGlobalTable && mainCheck && drs[1].ToString().Contains("{"))
-                    {
-                        int indexOfBracket = drs[1].ToString().IndexOf("{");
-                        if (argtCheck && !returntCheck)
-                        {
-                            drs[1] = drs[1].ToString().Substring(0, indexOfBracket + 1) +
-                                     "\nargt=context.getArgumentsTable();\n" +
-                                     drs[1].ToString().Substring(indexOfBracket + 1);
-                        }
-                        if (returntCheck && !argtCheck)
-                        {
-                            drs[1] = drs[1].ToString().Substring(0, indexOfBracket + 1) +
-                                     "\nreturnt=context.getReturnTable();\n" +
-                                     drs[1].ToString().Substring(indexOfBracket + 1);
-                        }
-                        if (argtCheck && returntCheck)
-                        {
-                            drs[1] = drs[1].ToString().Substring(0, indexOfBracket + 1) +
-                                     "\nargt=context.getArgumentsTable();" +
-                                     "\nreturnt=context.getReturnTable();\n" +
-                                     drs[1].ToString().Substring(indexOfBracket + 1);
-                        }
-                        shouldAddGlobalTable = false;
                     }
                     if (drs[1].ToString().Contains("StringLiteralDetected"))
                     {
                         ReplaceLiteral(drs, dtForLiterals);
                     }
-
+                    if (lineaftermain == 1)
+                    {
+                        if (drs[1].ToString().Trim().Equals("{"))
+                        {
+                            drs[1] = drs[1] + "\nargt=context.getArgumentsTable();\n";
+                        }
+                        else if (drs[1].ToString().Contains("{"))
+                        {
+                            int indexOfBracket;
+                            indexOfBracket = drs[1].ToString().IndexOf("{");
+                            drs[1] = drs[1].ToString().Substring(0, indexOfBracket + 1) +
+                                     "\nargt=context.getArgumentsTable();\n" +
+                                     drs[1].ToString().Substring(indexOfBracket + 1);
+                        }
+                        else
+                        {
+                            drs[1] = "argt=context.getArgumentsTable(); \n" + drs[1];
+                        }
+                    }
                     if (firstValidLineFlag)
                     {
                         writer.Write(drs[2] + "" + drs[1] + "" + drs[3] + "\n");
@@ -2372,6 +2399,18 @@ namespace AVSToJVSConversion.BLL
             {
                 throw ex;
             }
+        }
+
+        public bool Checkargt(DataTable dtForFile)
+        {
+            foreach (DataRow drs in dtForFile.Rows)
+            {
+                if (drs[1].ToString().Contains("argt"))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void ReplaceLiteral(DataRow drs, DataTable dtForLiterals)
@@ -2467,7 +2506,9 @@ namespace AVSToJVSConversion.BLL
                 }
 
 
-                _query = Constants.ENUMSQL + wordsInFile + ")";
+                _query =
+                    "select Enums.FileName, Enums.Enum, Enums.Include, Enums.Append, Enums.Exclude from Enums where Enums.Enum in (" +
+                    wordsInFile + ")";
 
                 _dataReader = OperationDao.ExecuteDataReader(_query, out _conn);
                 while (_dataReader.Read())
@@ -2551,7 +2592,7 @@ namespace AVSToJVSConversion.BLL
                                                  drs[1].ToString().Substring(endIndex + 1);
                                         position = position + _dataReader.GetValue(0).ToString().Length + 2;
                                     }
-                                    _utility.AddInIncludeDT(dtForInclude, _dataReader.GetValue(2).ToString(),
+                                    _utility.AddIncludeDT(dtForInclude, _dataReader.GetValue(2).ToString(),
                                         _dataReader.GetValue(0).ToString());
                                     continue;
                                 }
@@ -2645,7 +2686,7 @@ namespace AVSToJVSConversion.BLL
                                                  _dataReader.GetValue(1).ToString() +
                                                  drs[1].ToString().Substring(endIndex + 1);
                                     }
-                                    _utility.AddInIncludeDT(dtForInclude, _dataReader.GetValue(2).ToString(),
+                                    _utility.AddIncludeDT(dtForInclude, _dataReader.GetValue(2).ToString(),
                                         _dataReader.GetValue(0).ToString());
                                     position = position + _dataReader.GetValue(0).ToString().Length + 2;
                                     continue;
@@ -2663,14 +2704,12 @@ namespace AVSToJVSConversion.BLL
                         }
                     }
                 }
+                _dataReader.Close();
+                DbConnection.CloseSqlConnection(_conn);
             }
             catch (Exception ex)
             {
                 throw ex;
-            }
-            finally
-            {
-                _utility.closeSQLConnection(_conn, _dataReader);
             }
 
         }
@@ -2762,10 +2801,6 @@ namespace AVSToJVSConversion.BLL
                 {
                     ignorefound = false;
                     if (line.IndexOf("=") > line.IndexOf(")"))
-                    {
-                        ignorefound = true;
-                    }
-                    if (line.IndexOf(";") > line.IndexOf(")") && line.IndexOf("=") == -1)
                     {
                         ignorefound = true;
                     }
@@ -2865,6 +2900,417 @@ namespace AVSToJVSConversion.BLL
             return dtForVariables;
         }
 
+        public void AddTryCatchStatement(DataTable dtForFile)
+        {
+            try
+            {
+                foreach (DataRow drs in dtForFile.Rows)
+                {
+                    if (drs[1].Equals(""))
+                    {
+                        continue;
+                    }
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        public void ReplaceWhileIntoBoolStatement(DataTable dtForFile)
+        {
+            try
+            {
+                foreach (DataRow drs in dtForFile.Rows)
+                {
+                    if (drs[1].Equals(""))
+                    {
+                        continue;
+                    }
+
+                    string line = drs[1].ToString();
+                    List<char> symbolArray = new List<char>() { '(', ')' };
+                    if (line.Contains("while") && symbolArray.Any(n => line.ToCharArray().Contains(n)))
+                    {
+                        line.Substring(line.IndexOf('('), line.IndexOf(')'));
+
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtForFile"></param>
+        public void ValidateWhileStatement(DataTable dtForFile)
+        {
+            try
+            {
+                foreach (DataRow drs in dtForFile.Rows)
+                {
+                    if (drs[1].Equals(""))
+                    {
+                        continue;
+                    }
+                    drs[1] = CheckWhile(drs[1].ToString());
+
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        ///// <param name="line"></param>
+        ///// <returns></returns>
+        //private string CheckWhile(string line)
+        //{
+        //    string subStr = string.Empty;
+        //    List<char> symbolArray = new List<char>() { '(', ')' };
+        //    if (line.StartsWith("while") && symbolArray.Any(n => line.ToCharArray().Contains(n)))
+        //    {
+        //        subStr = line.Substring(line.IndexOf('(') + 1, line.IndexOf(')') - line.IndexOf('(') - 1);
+        //        line = line.Replace(subStr, ValidateSymbols(subStr, line));
+        //    }
+        //    return line;
+        //}
+
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        ///// <param name="strSymbol"></param>
+        ///// <param name="line"></param>
+        ///// <returns></returns>
+        //private string ValidateSymbols(string strSymbol, string line)
+        //{
+
+        //    string subNotStr = string.Empty;
+        //    StringBuilder strbuilder = new StringBuilder();
+        //    List<char> symbolList = new List<char>() { '=', '<', '>' };
+        //    int counter = 1;
+
+
+        //    if (strSymbol.Contains('!') && !strSymbol.Contains("&&") && !strSymbol.Contains("||"))
+        //    {
+        //        subNotStr = strSymbol.Substring(1, strSymbol.Length - 1);
+        //        strSymbol = strSymbol.Replace(strSymbol, string.Concat(subNotStr, "!=", 0));
+        //        return strSymbol;
+        //    }
+        //    string[] str = strSymbol.Split(new char[] { '&', '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+        //    if (strSymbol.Contains("&&"))
+        //    {
+
+        //        foreach (string item in str)
+        //        {
+        //            if (symbolList.Any(x => item.ToCharArray().Contains(x)))
+        //            {
+        //                strbuilder.Append(item);
+        //            }
+        //            else
+        //            {
+        //                strbuilder.Append(ValidateSymbols(item.Trim(), line));
+
+
+        //            }
+        //            if (counter < str.Length)
+        //                strbuilder.Append(" && ");
+        //            counter++;
+        //        }
+        //        return strbuilder.ToString();
+        //    }
+        //    else if (strSymbol.Contains("||"))
+        //    {
+        //        foreach (string item in str)
+        //        {
+        //            if (symbolList.Any(x => item.ToCharArray().Contains(x)))
+        //            {
+        //                strbuilder.Append(item);
+        //            }
+        //            else
+        //            {
+        //                strbuilder.Append(ValidateSymbols(item.Trim(), line));
+
+
+        //            }
+        //            if (counter < str.Length)
+        //                strbuilder.Append(" || ");
+        //            counter++;
+        //        }
+        //        return strbuilder.ToString();
+        //    }
+        //    else
+        //    {
+        //        strSymbol = strSymbol.Replace(strSymbol, string.Concat(strSymbol, ">", 0));
+        //        return strSymbol;
+        //    }
+        //}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        private string CheckWhile(string line)
+        {
+            string subStr = string.Empty;
+            List<char> symbolArray = new List<char>() { '(', ')' };
+            if (line.StartsWith("while") && symbolArray.Any(n => line.ToCharArray().Contains(n)))
+            {
+                if (line.Contains("(("))
+                    subStr = line.Substring(line.IndexOf('(') + 2, line.LastIndexOf(')') - line.IndexOf('(') - 1);
+                else
+                    subStr = line.Substring(line.IndexOf('(') + 1, line.LastIndexOf(')') - line.IndexOf('(') - 1);
+
+                line = line.Replace(subStr, ValidateSymbols(subStr, line));
+            }
+            return line;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="strSymbol"></param>
+        /// <param name="line"></param>
+        /// <returns></returns>
+        private string ValidateSymbols(string strSymbol, string line)
+        {
+
+            string subNotStr = string.Empty;
+            string subStringValue = string.Empty;
+            StringBuilder strbuilder = new StringBuilder();
+            List<char> symbolList = new List<char>() { '=', '<', '>' };
+            int counter = 1;
+
+            string[] strSymbolList = strSymbol.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
+
+
+            if (strSymbol.Contains('!') && !strSymbol.Contains("&&") && !strSymbol.Contains("||"))
+            {
+                if (strSymbol.Contains(')'))
+                {
+                    if (strSymbol[strSymbol.LastIndexOf(')') - 1].Equals(')'))
+                    {
+                        strSymbol = strSymbol.Substring(1, strSymbol.Length - 2);
+                        closeSquareBracket = true;
+                    }
+                    strSymbol = strSymbol.Replace(strSymbol,
+                        closeSquareBracket ? string.Concat(strSymbol, "!=", 0, ')') : string.Concat(strSymbol, "!=", 0));
+                    if (strSymbol.Trim().StartsWith("!"))
+                    {
+                        strSymbol = strSymbol.Substring(strSymbol.IndexOf('!') + 1,
+                            strSymbol.Length - strSymbol.IndexOf('!') - 1);
+                    }
+
+                    closeSquareBracket = false;
+                }
+                else
+                {
+                    subNotStr = strSymbol.Substring(1, strSymbol.Length - 1);
+                    strSymbol = strSymbol.Replace(strSymbol, string.Concat(subNotStr, "!=", 0));
+                }
+                return strSymbol;
+            }
+            if (strSymbolList.Length > 0 && (strSymbol.Contains("&&") || strSymbol.Contains("||")))
+            {
+                string subItem = string.Empty;
+                string value = string.Empty;
+                foreach (var itemStr in strSymbolList)
+                {
+                    if (itemStr.Contains("||"))
+                    {
+                        string[] strOR = itemStr.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        foreach (string item in strOR)
+                        {
+                            if (item.Trim().StartsWith("("))
+                            {
+                                openSquarebracket = true;
+                                subItem = item.TrimEnd()
+                                    .Substring(item.IndexOf('(') + 1,
+                                        item.Contains(')')
+                                            ? item.LastIndexOf(')') - (item.Count(n => n == ')') - 1)
+                                            : item.LastIndexOf(' ') - 1);
+                                if (item.Contains('(') && !item.Contains(')'))
+                                {
+                                    openSquarebracket = true;
+                                    closeSquareBracket = false;
+                                }
+                                else if (item.Contains(')') && !item.Contains('('))
+                                {
+                                    openSquarebracket = false;
+                                    closeSquareBracket = true;
+                                }
+                            }
+
+                            else if (item.Contains(')'))
+                            {
+
+                                if (item[item.LastIndexOf(')') - 1] != ')')
+                                {
+                                    subItem = item.Substring(0, item.LastIndexOf(')'));
+                                    closeSquareBracket = true;
+                                }
+                                else
+                                    subItem = item;
+                                openSquarebracket = false;
+                            }
+                            else
+                            {
+                                subItem = item;
+                            }
+                            if (symbolList.Any(x => item.ToCharArray().Contains(x)))
+                            {
+                                strbuilder.Append(item);
+                            }
+                            else
+                            {
+                                value = ValidateSymbols(subItem.Trim(), line);
+                                if (openSquarebracket)
+                                    value = '(' + value;
+                                if (closeSquareBracket)
+                                    value = value + ')';
+
+                                strbuilder.Append(value);
+
+
+                            }
+                            if (counter < strOR.Length)
+                                strbuilder.Append(" || ");
+                            counter++;
+                        }
+                    }
+
+                    else
+                    {
+                        if (itemStr.Trim().StartsWith("("))
+                        {
+                            if (strSymbol.Count(n => n == '(') == strSymbol.Count(n => n == ')'))
+                                subItem = itemStr.TrimEnd()
+                                    .Substring(itemStr.IndexOf('(') + 1, itemStr.LastIndexOf(')') - 1);
+                            else
+                            {
+
+                                //subItem = itemStr.Trim()
+                                //    .Substring(itemStr.IndexOf('(') + 1,
+                                //        itemStr.Trim().Contains(')')
+                                //            ? itemStr.LastIndexOf(')')
+                                //            : itemStr.LastIndexOf(' ') - 2);
+
+                                subItem = itemStr.Trim()
+                                    .Substring(itemStr.IndexOf('(') + 1,
+                                        itemStr.Contains(')')
+                                            ? itemStr.LastIndexOf(')') - (itemStr.Count(n => n == ')') - 1)
+                                            : itemStr.LastIndexOf(' ') - 1);
+                                appendflag = true;
+                                closeSquareBracket = true;
+                            }
+                            openSquarebracket = true;
+
+                        }
+                        else if (itemStr.Contains(')'))
+                        {
+                            if (itemStr[itemStr.LastIndexOf(')') - 1] != ')')
+                            {
+                                subItem = itemStr.Substring(0, itemStr.LastIndexOf(')'));
+                                closeSquareBracket = true;
+                            }
+                            else
+                            {
+                                subItem = itemStr;
+                            }
+                            openSquarebracket = false;
+                        }
+                        else
+                        {
+                            subItem = itemStr;
+                        }
+
+
+                        if (symbolList.Any(x => itemStr.ToCharArray().Contains(x)))
+                        {
+                            strbuilder.Append(string.Concat(" &&", itemStr, "&&"));
+                        }
+                        else
+                        {
+                            value = ValidateSymbols(subItem.Trim(), line);
+                            if (openSquarebracket)
+                                value = '(' + value;
+                            if (closeSquareBracket)
+                                value = value + ')';
+                            strbuilder.Append(string.Concat(" &&", value, "&&"));
+                        }
+                    }
+                }
+
+                subStringValue = strbuilder.ToString();
+
+                if (subStringValue.Trim().StartsWith("&&"))
+                {
+                    subStringValue = subStringValue.Substring(3, strbuilder.ToString().Length - 3);
+
+                }
+                if (subStringValue.Trim().EndsWith("&&"))
+                {
+                    subStringValue = subStringValue.Substring(0, subStringValue.LastIndexOf('&') - 1);
+                }
+                if (subStringValue.Trim().Contains("&& &&"))
+                {
+                    subStringValue = subStringValue.Replace("&& &&", "&&");
+                }
+                return subStringValue;
+            }
+            else if (strSymbol.Contains("="))
+            {
+                return strSymbol;
+            }
+
+            else
+            {
+                if (strSymbol.Contains(')'))
+                {
+                    if (strSymbol[strSymbol.LastIndexOf(')') - 1].Equals(')'))
+                    {
+                        if (strSymbol.Count(n => n == '(') == strSymbol.Count(n => n == ')'))
+                        {
+                            appendflag = true;
+                        }
+                        strSymbol = strSymbol.Substring(0, strSymbol.Length - (strSymbol.Count(n => n == ')') - 1));
+                        closeSquareBracket = true;
+                    }
+                    else
+                    {
+                        strSymbol = strSymbol.Replace(')', ' ');
+                        closeSquareBracket = true;
+                        appendflag = true;
+                    }
+                }
+
+
+
+                strSymbol = strSymbol.Replace(strSymbol,
+                    closeSquareBracket
+                        ? !appendflag ? string.Concat(strSymbol, ">", 0, ')') : string.Concat(strSymbol, ">", 0, "))")
+                        : string.Concat(strSymbol, ">", 0));
+                closeSquareBracket = false;
+                return strSymbol;
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -2876,7 +3322,7 @@ namespace AVSToJVSConversion.BLL
                 Dictionary<string, DataTypes> variableDictionary = new Dictionary<string, DataTypes>();
                 List<char> symbolArray = new List<char>() { '(', ')', '+' };
                 string pattern = @"^[0-9]+$";
-                const string LABEL_COMMENT = "//Insert Text Here";
+                const string LABEL_COMMENT = "//Append String Here";
                 _objRegex = new Regex(pattern);
                 string strVariableList = string.Empty;
                 char[] chars = null;
@@ -2992,17 +3438,6 @@ namespace AVSToJVSConversion.BLL
                                 });
 
                     }
-                    else
-                    {
-                        dtForFile.AsEnumerable().ToList<DataRow>().
-                            ForEach(
-                                m =>
-                                {
-                                    m[1] = ((string)m[1])
-                                        .Replace(LABEL_COMMENT, string.Empty);
-                                });
-
-                    }
                 }
             }
             catch (Exception ex)
@@ -3027,8 +3462,7 @@ namespace AVSToJVSConversion.BLL
             {
                 return "int";
             }
-            else if (val.Contains("GetStringN(") || val.Contains("GetStringN (") ||
-                     val.StartsWith("StringLiteral", StringComparison.OrdinalIgnoreCase))
+            else if (val.Contains("GetStringN(") || val.Contains("GetStringN (") || val.StartsWith("StringLiteral", StringComparison.OrdinalIgnoreCase))
             {
                 return "string";
             }
@@ -3094,157 +3528,7 @@ namespace AVSToJVSConversion.BLL
             {
                 throw ex;
             }
-        }
 
-        public void InitializeVariables(DataTable dtForFile, DataTable dtForInclude)
-        {
-            bool methodStartFlag = false;
-            bool methodNamefoundFlag = false;
-            int openCurlyBraces = 0;
-
-            try
-            {
-                foreach (DataRow drs in dtForFile.Rows)
-                {
-                    if (drs[1].Equals(""))
-                    {
-                        continue;
-                    }
-
-                    if (!methodNamefoundFlag && !methodStartFlag &&
-                        _utility.DetectMethodNameStartPointer(drs[1].ToString()))
-                    {
-                        if (!drs[1].ToString().Contains("=") && !drs[1].ToString().Contains("+"))
-                        {
-                            methodNamefoundFlag = true;
-                        }
-                    }
-                    if (methodNamefoundFlag)
-                    {
-                        if (_utility.DetectMethodStartPointer(drs[1].ToString()))
-                        {
-                            methodStartFlag = true;
-                            methodNamefoundFlag = false;
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-                    if (methodStartFlag)
-                    {
-                        if (_utility.CheckVariableDeclaration(drs[1].ToString()))
-                        {
-                            _dataReader = OperationDao.ExecuteDataReader(Constants.INITIALIZEVARIABLESQL, out _conn);
-                            while (_dataReader.Read())
-                            {
-                                int positionOfVariableType;
-                                string line = drs[1].ToString();
-
-                                while (_utility.CheckVariableType(line, _dataReader.GetValue(0).ToString() + " "))
-                                {
-                                    positionOfVariableType = _utility.GetVariableTypePosition(line,
-                                        _dataReader.GetValue(0).ToString() + " ");
-                                    if (drs[1].ToString().Substring(positionOfVariableType).Count(x => x == '(') ==
-                                        drs[1].ToString().Substring(positionOfVariableType).Count(x => x == ')'))
-                                    {
-                                        if (positionOfVariableType == 0 && !drs[1].ToString().Contains(";"))
-                                        {
-                                            break;
-                                        }
-                                        if (positionOfVariableType == 0 && drs[1].ToString().Contains("("))
-                                        {
-                                            string subLine = drs[1].ToString().Substring(0, line.IndexOf("("));
-                                            if (!subLine.Contains(";") && !subLine.Contains("="))
-                                            {
-                                                break;
-                                            }
-                                        }
-                                        line = drs[1].ToString().Substring(0, positionOfVariableType);
-                                        bool openBracketFound = false;
-                                        bool equalFound = false;
-                                        int openBracketCount = 0;
-                                        char[] lineArray =
-                                            drs[1].ToString()
-                                                .Substring(positionOfVariableType,
-                                                    drs[1].ToString().IndexOf(";", positionOfVariableType) + 1 - positionOfVariableType)
-                                                .ToCharArray();
-                                        foreach (char character in lineArray)
-                                        {
-                                            if (openBracketFound)
-                                            {
-                                                if (character == '(')
-                                                    openBracketCount++;
-                                                if (character == ')')
-                                                {
-                                                    openBracketCount--;
-                                                    if (openBracketCount == 0)
-                                                    {
-                                                        openBracketFound = false;
-                                                    }
-                                                }
-                                                line = line + character;
-                                                continue;
-                                            }
-                                            if (equalFound)
-                                            {
-                                                if (character == '(')
-                                                {
-                                                    openBracketCount++;
-                                                    openBracketFound = true;
-                                                    line = line + character;
-                                                    continue;
-                                                }
-                                                if (character == ',')
-                                                {
-                                                    equalFound = false;
-                                                    line = line + character;
-                                                    continue;
-                                                }
-                                                line = line + character;
-                                                continue;
-                                            }
-                                            if (character == '=')
-                                            {
-                                                line = line + character;
-                                                equalFound = true;
-                                                continue;
-                                            }
-                                            if (character == ',' || character == ';')
-                                            {
-                                                line = line + "=" + _dataReader.GetValue(1).ToString();
-                                                if (!_dataReader.GetValue(2).ToString().Equals(""))
-                                                {
-                                                    _utility.AddInIncludeDT(dtForInclude,
-                                                        _dataReader.GetValue(3).ToString(),
-                                                        _dataReader.GetValue(2).ToString());
-                                                }
-                                                line = line + character;
-                                                continue;
-                                            }
-                                            line = line + character;
-                                        }
-                                        drs[1] = line;
-                                    }
-                                    line = line.Substring(0, positionOfVariableType);
-                                }
-                            }
-                            _utility.closeSQLConnection(_conn, _dataReader);
-                        }
-
-                        openCurlyBraces = openCurlyBraces + _utility.GetOpenCurlyBracescount(drs[1].ToString()) -
-                                          _utility.GetCloseCurlyBracescount(drs[1].ToString());
-                        if (openCurlyBraces == 0)
-                        {
-                            methodStartFlag = false;
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                _utility.closeSQLConnection(_conn, _dataReader);
-            }
         }
     }
 }
