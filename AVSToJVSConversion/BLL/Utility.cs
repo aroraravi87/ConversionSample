@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 /*****************************************************************************
 File Name:              (AVS_To_JVS.mls)
 +------+----------+------------+-----------------------------------------------------------------------+
@@ -16,11 +16,17 @@ File Name:              (AVS_To_JVS.mls)
 Description:       
 
 *****************************************************************************/
+using AVSToJVSConversion.Common;
+using AVSToJVSConversion.DLL;
 
 namespace AVSToJVSConversion.BLL
 {
-    class Utility
+    internal class Utility
     {
+        private SqlConnection _conn = null;
+        private SqlDataReader _dataReader = null;
+
+
         public string GetIncludeStatement(bool methodStartFlag, string returnLine, string includeList, string line)
         {
             if (!methodStartFlag && DetectIncludeStatement(returnLine))
@@ -321,7 +327,7 @@ namespace AVSToJVSConversion.BLL
 
                 for (j = smallBracketOpen - 1; j >= 0; j--)
                 {
-                    if (!char.IsLetter(splittedLine[j]) && !(splittedLine[j] == '_'))
+                    if (!char.IsLetterOrDigit(splittedLine[j]) && splittedLine[j] != '_')
                     {
                         if (line.Substring(j + 1, smallBracketOpen - (j + 1)).Trim().Equals(""))
                         {
@@ -331,7 +337,8 @@ namespace AVSToJVSConversion.BLL
                             }
                             else
                             {
-                                line = line.Substring(0, j + 1 - 0) + "a" + line.Substring(smallBracketclose + 1, line.Length - (smallBracketclose + 1));
+                                line = line.Substring(0, j + 1 - 0) + "a" +
+                                       line.Substring(smallBracketclose + 1, line.Length - (smallBracketclose + 1));
                                 methods[i] = null;
                                 emptySmallBracketFound = true;
                                 break;
@@ -343,7 +350,8 @@ namespace AVSToJVSConversion.BLL
                 if (!emptySmallBracketFound)
                 {
                     methods[i] = line.Substring(j + 1, smallBracketclose + 1 - (j + 1));
-                    line = line.Substring(0, j + 1 - 0) + "a" + line.Substring(smallBracketclose + 1, line.Length - (smallBracketclose + 1));
+                    line = line.Substring(0, j + 1 - 0) + "a" +
+                           line.Substring(smallBracketclose + 1, line.Length - (smallBracketclose + 1));
                 }
             }
 
@@ -368,109 +376,48 @@ namespace AVSToJVSConversion.BLL
             {
                 count++;
                 line = line.Substring(line.IndexOf(keyword) + keyword.Length);
-            }
-            while (line.Contains(keyword));
+            } while (line.Contains(keyword));
 
             return count;
         }
 
         public bool CheckVariableDeclaration(string line)
         {
-            if (CheckVariableType(line, "int "))
+            try
             {
-                return true;
+                _dataReader = OperationDao.ExecuteDataReader(Constants.JVSVARIABLELISTSQL, out _conn);
+                while (_dataReader.Read())
+                {
+                    if (CheckVariableType(line, _dataReader.GetValue(0).ToString() + " "))
+                    {
+                        return true;
+                    }
+                }
             }
-
-            if (CheckVariableType(line, "Table "))
+            finally
             {
-                return true;
+                closeSQLConnection(_conn, _dataReader);
             }
-
-            if (CheckVariableType(line, "XString "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "String "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "Transaction "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "Instrument "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "ODateTime "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "Nomination "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "double "))
-            {
-                return true;
-            }
-
             return false;
         }
 
         public bool CheckAVSVariableDeclaration(string line)
         {
-            if (CheckVariableType(line, "int "))
+            try
             {
-                return true;
+                _dataReader = OperationDao.ExecuteDataReader(Constants.AVSVARIABLELISTSQL, out _conn);
+                while (_dataReader.Read())
+                {
+                    if (CheckVariableType(line, _dataReader.GetValue(0).ToString() + " "))
+                    {
+                        return true;
+                    }
+                }
             }
-
-            if (CheckVariableType(line, "TablePtr "))
+            finally
             {
-                return true;
+                closeSQLConnection(_conn, _dataReader);
             }
-
-            if (CheckVariableType(line, "XStringPtr "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "string "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "TRANSACTION* "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "INS_DATA* "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "DATE_TIME* "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "NOMINATION_PTR "))
-            {
-                return true;
-            }
-
-            if (CheckVariableType(line, "double "))
-            {
-                return true;
-            }
-
             return false;
         }
 
@@ -492,7 +439,8 @@ namespace AVSToJVSConversion.BLL
                     }
                     else
                     {
-                        if (!char.IsLetterOrDigit(line.ToCharArray()[position - 1]) && line.ToCharArray()[position - 1] != '_')
+                        if (!char.IsLetterOrDigit(line.ToCharArray()[position - 1]) &&
+                            line.ToCharArray()[position - 1] != '_')
                         {
                             return true;
                         }
@@ -506,47 +454,20 @@ namespace AVSToJVSConversion.BLL
         public int GetPositionOfVariableTypeInLine(string line)
         {
             int largest = -1;
-
-            largest = GetVariableTypePosition(line, "int ");
-
-            if (GetVariableTypePosition(line, "Table ") > largest)
+            try
             {
-                largest = GetVariableTypePosition(line, "Table ");
+                _dataReader = OperationDao.ExecuteDataReader(Constants.JVSVARIABLELISTSQL, out _conn);
+                while (_dataReader.Read())
+                {
+                    if (GetVariableTypePosition(line, _dataReader.GetValue(0).ToString() + " ") > largest)
+                    {
+                        largest = GetVariableTypePosition(line, _dataReader.GetValue(0).ToString() + " ");
+                    }
+                }
             }
-
-            if (GetVariableTypePosition(line, "XString ") > largest)
+            finally
             {
-                largest = GetVariableTypePosition(line, "XString ");
-            }
-
-            if (GetVariableTypePosition(line, "String ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "String ");
-            }
-
-            if (GetVariableTypePosition(line, "Transaction ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "Transaction ");
-            }
-
-            if (GetVariableTypePosition(line, "Instrument ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "Instrument ");
-            }
-
-            if (GetVariableTypePosition(line, "ODateTime ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "ODateTime ");
-            }
-
-            if (GetVariableTypePosition(line, "Nomination ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "Nomination ");
-            }
-
-            if (GetVariableTypePosition(line, "double ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "double ");
+                closeSQLConnection(_conn, _dataReader);
             }
             return largest;
         }
@@ -554,47 +475,20 @@ namespace AVSToJVSConversion.BLL
         public int GetPositionOfAVSVariableTypeInLine(string line)
         {
             int largest = -1;
-
-            largest = GetVariableTypePosition(line, "int ");
-
-            if (GetVariableTypePosition(line, "TablePtr ") > largest)
+            try
             {
-                largest = GetVariableTypePosition(line, "TablePtr ");
+                _dataReader = OperationDao.ExecuteDataReader(Constants.AVSVARIABLELISTSQL, out _conn);
+                while (_dataReader.Read())
+                {
+                    if (GetVariableTypePosition(line, _dataReader.GetValue(0).ToString() + " ") > largest)
+                    {
+                        largest = GetVariableTypePosition(line, _dataReader.GetValue(0).ToString() + " ");
+                    }
+                }
             }
-
-            if (GetVariableTypePosition(line, "XStringPtr ") > largest)
+            finally
             {
-                largest = GetVariableTypePosition(line, "XStringPtr ");
-            }
-
-            if (GetVariableTypePosition(line, "string ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "string ");
-            }
-
-            if (GetVariableTypePosition(line, "TRANSACTION* ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "TRANSACTION* ");
-            }
-
-            if (GetVariableTypePosition(line, "INS_DATA* ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "INS_DATA* ");
-            }
-
-            if (GetVariableTypePosition(line, "DATE_TIME* ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "DATE_TIME* ");
-            }
-
-            if (GetVariableTypePosition(line, "NOMINATION_PTR ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "NOMINATION_PTR ");
-            }
-
-            if (GetVariableTypePosition(line, "double ") > largest)
-            {
-                largest = GetVariableTypePosition(line, "double ");
+                closeSQLConnection(_conn, _dataReader);
             }
             return largest;
         }
@@ -619,7 +513,8 @@ namespace AVSToJVSConversion.BLL
                     }
                     else
                     {
-                        if (!Char.IsLetterOrDigit(line.ToCharArray()[position - 1]) && line.ToCharArray()[position - 1] != '_')
+                        if (!Char.IsLetterOrDigit(line.ToCharArray()[position - 1]) &&
+                            line.ToCharArray()[position - 1] != '_')
                         {
                             element = variableType;
                             return true;
@@ -631,7 +526,8 @@ namespace AVSToJVSConversion.BLL
             element = string.Empty;
             return false;
         }
-        int GetVariableTypePosition(string line, string variableType)
+
+        public int GetVariableTypePosition(string line, string variableType)
         {
             int position = -1;
             int count = 0;
@@ -649,7 +545,8 @@ namespace AVSToJVSConversion.BLL
                     }
                     else
                     {
-                        if (!char.IsLetterOrDigit(line.ToCharArray()[position - 1]) && line.ToCharArray()[position - 1] != '_')
+                        if (!char.IsLetterOrDigit(line.ToCharArray()[position - 1]) &&
+                            line.ToCharArray()[position - 1] != '_')
                         {
                             return position;
                         }
@@ -662,19 +559,23 @@ namespace AVSToJVSConversion.BLL
 
         public string GetVariableList(string line, string variableList)
         {
-            variableList = GetVariableListOfGivenType(line, variableList, "int ");
-            variableList = GetVariableListOfGivenType(line, variableList, "Table ");
-            variableList = GetVariableListOfGivenType(line, variableList, "String ");
-            variableList = GetVariableListOfGivenType(line, variableList, "double ");
-            variableList = GetVariableListOfGivenType(line, variableList, "Nomination ");
-            variableList = GetVariableListOfGivenType(line, variableList, "ODateTime ");
-            variableList = GetVariableListOfGivenType(line, variableList, "Instrument ");
-            variableList = GetVariableListOfGivenType(line, variableList, "Transaction ");
-            variableList = GetVariableListOfGivenType(line, variableList, "XString ");
+            try
+            {
+                _dataReader = OperationDao.ExecuteDataReader(Constants.JVSVARIABLELISTSQL, out _conn);
+                while (_dataReader.Read())
+                {
+                    variableList = GetVariableListOfGivenType(line, variableList,
+                        _dataReader.GetValue(0).ToString() + " ");
+                }
+            }
+            finally
+            {
+                closeSQLConnection(_conn, _dataReader);
+            }
             return variableList;
         }
 
-        string GetVariableListOfGivenType(string line, string variableList, string variableType)
+        private string GetVariableListOfGivenType(string line, string variableList, string variableType)
         {
             int positionOfVariableType = -1;
             int positionOfvariabletypeEnding = -1;
@@ -703,16 +604,21 @@ namespace AVSToJVSConversion.BLL
                         }
                         if (variableList.Equals(""))
                         {
-                            variableList = line.Substring(positionOfVariableType + variableType.Length, positionOfvariabletypeEnding - (positionOfVariableType + variableType.Length));
+                            variableList = line.Substring(positionOfVariableType + variableType.Length,
+                                positionOfvariabletypeEnding - (positionOfVariableType + variableType.Length));
                         }
                         else
                         {
-                            variableList = variableList + "," + line.Substring(positionOfVariableType + variableType.Length, positionOfvariabletypeEnding - (positionOfVariableType + variableType.Length));
+                            variableList = variableList + "," +
+                                           line.Substring(positionOfVariableType + variableType.Length,
+                                               positionOfvariabletypeEnding -
+                                               (positionOfVariableType + variableType.Length));
                         }
                     }
                     else
                     {
-                        if (!char.IsLetterOrDigit(line.ToCharArray()[positionOfVariableType - 1]) && line.ToCharArray()[positionOfVariableType - 1] != '_')
+                        if (!char.IsLetterOrDigit(line.ToCharArray()[positionOfVariableType - 1]) &&
+                            line.ToCharArray()[positionOfVariableType - 1] != '_')
                         {
                             positionOfvariabletypeEnding = line.IndexOf(";", positionOfVariableType);
                             if (positionOfvariabletypeEnding == -1)
@@ -728,11 +634,15 @@ namespace AVSToJVSConversion.BLL
                             }
                             if (variableList.Equals(""))
                             {
-                                variableList = line.Substring(positionOfVariableType + variableType.Length, positionOfvariabletypeEnding - (positionOfVariableType + variableType.Length));
+                                variableList = line.Substring(positionOfVariableType + variableType.Length,
+                                    positionOfvariabletypeEnding - (positionOfVariableType + variableType.Length));
                             }
                             else
                             {
-                                variableList = variableList + "," + line.Substring(positionOfVariableType + variableType.Length, positionOfvariabletypeEnding - (positionOfVariableType + variableType.Length));
+                                variableList = variableList + "," +
+                                               line.Substring(positionOfVariableType + variableType.Length,
+                                                   positionOfvariabletypeEnding -
+                                                   (positionOfVariableType + variableType.Length));
                             }
                         }
                     }
@@ -889,7 +799,7 @@ namespace AVSToJVSConversion.BLL
             return true;
         }
 
-        public void AddIncludeDT(DataTable dtForInclude, string include, string className)
+        public void AddInIncludeDT(DataTable dtForInclude, string include, string className)
         {
             bool includeFlag = true;
             foreach (DataRow drs in dtForInclude.Rows)
@@ -965,22 +875,80 @@ namespace AVSToJVSConversion.BLL
             }
             return returnList;
         }
+
         public void GetCustomLogAppender()
         {
-            string path = String.Concat("LogFile_", DateTime.Now.Month
-                                   , DateTime.Now.Day
-                                   , DateTime.Now.Year, DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second, ".log");
+            string path = String.Concat("LogFile_", DateTime.Now.Day
+                , DateTime.Now.Month
+                , DateTime.Now.Year,"_",DateTime.Now.Hour,DateTime.Now.Minute,DateTime.Now.Second,".log");
+           
+
 
             log4net.Repository.ILoggerRepository repository = log4net.LogManager.GetRepository();
             foreach (log4net.Appender.IAppender appender in repository.GetAppenders())
             {
                 if (appender.Name.CompareTo("RollingFileAppender") == 0 && appender is log4net.Appender.FileAppender)
                 {
-                    log4net.Appender.FileAppender fileAppender = (log4net.Appender.FileAppender)appender;
+                    log4net.Appender.FileAppender fileAppender = (log4net.Appender.FileAppender) appender;
                     fileAppender.File = System.IO.Path.Combine(fileAppender.File, path);
 
                     fileAppender.ActivateOptions();
                 }
+            }
+        }
+
+        public void destroyDT(DataTable dataTable)
+        {
+            if (dataTable != null)
+                dataTable.Dispose();
+            dataTable = null;
+        }
+
+        public bool CheckMain(DataTable dtForFile)
+        {
+            foreach (DataRow drs in dtForFile.Rows)
+            {
+                if (drs[1].ToString().Contains(" main()") ||
+                    (drs[1].ToString().Contains(" main ") && drs[1].ToString().Contains(" ()")))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool CheckMain(string line)
+        {
+            if (line.Contains(" main()") ||
+                (line.Contains(" main ") && line.Contains(" ()")))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public bool CheckGlobalTable(DataTable dtForFile, string globalTableName)
+        {
+            foreach (DataRow drs in dtForFile.Rows)
+            {
+                if (drs[1].ToString().Contains(globalTableName))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void closeSQLConnection(SqlConnection _conn, SqlDataReader _dataReader)
+        {
+            try
+            {
+                _dataReader.Close();
+                DbConnection.CloseSqlConnection(_conn);
+            }
+            catch (Exception e)
+            {
+            
             }
         }
     }

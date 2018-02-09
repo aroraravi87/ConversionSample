@@ -8,7 +8,7 @@
          xmlns:cnvt="clr-namespace:AVSToJVSConversion.Common"
          x:Class="AVSToJVSConversion.Views.MainWindow"
         mc:Ignorable="d"
-        Title="AVS to JVS Conversion Tool" Height="310" Width="500" ResizeMode="NoResize" HorizontalAlignment="Center" VerticalAlignment="Center"
+        Title="AVS to JVS Conversion Tool" Height="350" Width="500" ResizeMode="NoResize" HorizontalAlignment="Center" VerticalAlignment="Center"
          Icon="/AVSToJVSConversion;component/Content/Images/icon.jpg"
         >
     <Window.Resources>
@@ -63,59 +63,91 @@
             <ImageBrush  ImageSource="/AVSToJVSConversion;component/Content/Images/waves.jpg"  Stretch="UniformToFill"/>
         </Grid.Background>
 
-        <TextBox x:Name="textBoxAVSScriptPath"  HorizontalAlignment="Left" Height="20" IsReadOnly="True" Margin="116,50,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" Foreground="Black"              
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
+        </Grid.ColumnDefinitions>
+
+
+
+
+        <TextBox x:Name="textBoxAVSScriptPath" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"  HorizontalAlignment="center" VerticalAlignment="Center" Height="20" IsReadOnly="True" TextWrapping="Wrap"  Width="200" Foreground="Black"              
                  ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" Text="{Binding AVSPath,Source={StaticResource MainVm}, Mode=TwoWay}" >
 
         </TextBox>
 
-        <TextBox x:Name="textBoxAVSLibraryPath" HorizontalAlignment="Left" Height="20" IsReadOnly="True" Margin="117,100,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150"  ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" Text="{Binding LibraryPath,Source={StaticResource MainVm}, Mode=TwoWay}"  />
+        <TextBox x:Name="textBoxAVSLibraryPath" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="center" VerticalAlignment="Center" Height="20" IsReadOnly="True"  TextWrapping="Wrap"  Width="200"  ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" Text="{Binding LibraryPath,Source={StaticResource MainVm}, Mode=TwoWay}"  />
 
-        <TextBox x:Name="textBoxOutputPath" HorizontalAlignment="Left" Height="20" IsReadOnly="True" Margin="117,150,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" 
+        <TextBox x:Name="textBoxOutputPath" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" Height="20" IsReadOnly="True"  TextWrapping="Wrap"  Width="200" ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" VerticalAlignment="Center"
                   Text="{Binding JVSPath,Source={StaticResource MainVm}, Mode=TwoWay}"/>
 
-        <Button  x:Name="buttonAVSFileSelect" Background="white" Content="Browse" x:Uid="BrowseAVS" HorizontalAlignment="Right" Height="20" Margin="0,50,100,0" VerticalAlignment="Top" Width="70"   FontFamily="the-font"
+        <Button  x:Name="buttonAVSFileSelect" Background="white" Content="Browse" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" x:Uid="BrowseAVS" HorizontalAlignment="Right" Height="20"  Width="70"   FontFamily="the-font"
                  Command="{Binding SelectCommand,Source={StaticResource MainVm},Mode=TwoWay}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}">
         </Button>
-        <Button  x:Name="buttonAVSLibraryPathSelect" Content="Browse" x:Uid="BrowseLibrary" HorizontalAlignment="Right" Height="20" 
-                     Margin="0,100,100,0" VerticalAlignment="Top" Width="70" 
+        <Button  x:Name="buttonAVSLibraryPathSelect" Content="Browse" x:Uid="BrowseLibrary" HorizontalAlignment="Right" Height="20" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
+                      Width="70" 
                      Background="white" FontFamily="Sans-Serif"
                   Command="{Binding SelectCommand,Source={StaticResource MainVm}}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}">
         </Button>
-        <Button  x:Name="buttonOutputPathSelect" Background="white" Content="Browse" x:Uid="BrowseJVS" HorizontalAlignment="Right" Height="20" Margin="0,150,100,0" VerticalAlignment="Top" Width="70"  FontFamily="Sans-Serif"
+        <Button  x:Name="buttonOutputPathSelect" Background="white" Content="Browse" x:Uid="BrowseJVS" HorizontalAlignment="Right" Height="20" Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Top" Width="70"  FontFamily="Sans-Serif"
                   Command="{Binding SelectCommand,Source={StaticResource MainVm}}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}">
         </Button>
-        <Button  x:Name="buttonSubmit" Content="Submit" x:Uid="Conversion"  Background="white" HorizontalContentAlignment="Center"   VerticalContentAlignment="Center" Height="20" Width="70"  FontFamily="Sans-Serif" Margin="57,180,206,28"  HorizontalAlignment="Center" VerticalAlignment="Center"  Command="{Binding SelectCommand,Source={StaticResource MainVm}}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}">
+        <Button  x:Name="buttonSubmit" Content="Submit" x:Uid="Conversion"  Background="white" HorizontalContentAlignment="Center"    Height="20" Width="70"  FontFamily="Sans-Serif" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="1"  HorizontalAlignment="Center" VerticalAlignment="Center"  Command="{Binding SelectCommand,Source={StaticResource MainVm}}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}">
         </Button>
-        <Button  x:Name="buttonClear" Content="Refresh" x:Uid="Refresh"  Background="white" HorizontalContentAlignment="Center"   VerticalContentAlignment="Center" Height="20" Width="70"  FontFamily="Sans-Serif" Margin="135,180,126,28"  HorizontalAlignment="Center" VerticalAlignment="Center" Command="{Binding SelectCommand,Source={StaticResource MainVm}}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}" >
+        <Button  x:Name="buttonClear" Content="Refresh" x:Uid="Refresh"  Background="white" HorizontalContentAlignment="Right" Height="20" Width="70"  FontFamily="Sans-Serif" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"  HorizontalAlignment="Center" VerticalAlignment="Center" Command="{Binding SelectCommand,Source={StaticResource MainVm}}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}" >
         </Button>
 
 
-        <Label Content="Script Path*" HorizontalAlignment="Left" Height="26" Margin="34,47,0,0" VerticalAlignment="Top" Width="100" Foreground="White" >
+        <Label Content="Script Path*" HorizontalAlignment="Center" Height="26" VerticalAlignment="Center" Width="100" Foreground="White" Grid.Row="1" Grid.Column="0" HorizontalContentAlignment="Right">
             <Label.Effect>
                 <DropShadowEffect/>
             </Label.Effect>
         </Label>
-        <Label Content="Library Path" HorizontalAlignment="Left" Height="26" Margin="34,97,0,0" VerticalAlignment="Top" Width="100" Foreground="White">
+        <Label Content="Library Path" HorizontalAlignment="Center" Height="26"  VerticalAlignment="Center" Width="100" Foreground="White" Grid.Row="2" Grid.Column="0" HorizontalContentAlignment="Right">
             <Label.Effect>
                 <DropShadowEffect/>
             </Label.Effect>
         </Label>
-        <Label Content="Output Path*" HorizontalAlignment="Left" Height="26" Margin="34,147,0,0" VerticalAlignment="Top" Width="100" Foreground="White" >
+        <Label Content="Output Path*" HorizontalAlignment="Center" Height="26" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Width="100" Foreground="White" HorizontalContentAlignment="Right">
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+        <Label Name="labelErrorValidation"  HorizontalAlignment="Center" Height="30" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="4" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Opacity="1" Content="{Binding ErrorMessage, Source={StaticResource MainVm}}" Foreground="{Binding Status,Source={StaticResource MainVm},Converter={StaticResource Converter},Mode=Default}">
             <Label.Effect>
                 <DropShadowEffect/>
             </Label.Effect>
         </Label>
 
-        <Label Name="labelErrorValidation"  HorizontalAlignment="Center" Height="30" Margin="-70,220,10,10" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Opacity="1" Content="{Binding ErrorMessage, Source={StaticResource MainVm}}" Foreground="{Binding Status,Source={StaticResource MainVm},Converter={StaticResource Converter},Mode=Default}">
-            <Label.Effect>
-                <DropShadowEffect/>
-            </Label.Effect>
-        </Label>
+        <StackPanel  Visibility="{Binding ProgressVisibility, Source={StaticResource MainVm}}"  Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" VerticalAlignment="Center" HorizontalAlignment="Center" >
+            <ProgressBar Name="ProgressPanel" Width="180" Height="20" Margin="0,10,0,0"  Value="{Binding ProgressStatus,Source={StaticResource MainVm},Mode=OneWay}"
+                     Minimum="1" Maximum="{Binding MlsFileCount, Source={StaticResource MainVm},Mode=TwoWay}"
+                     >
 
-        <!--<ProgressBar Name="ProgressPanel" Width="200" Height="20" Orientation="Horizontal" Margin="-70,250,10,10" Value="{Binding ProgressStatus,Source={StaticResource MainVm}}">
-            
-        </ProgressBar>-->
+            </ProgressBar>
+            <TextBlock Text="{Binding PageCountMessage, Source={StaticResource MainVm}}"  Foreground="White" FontWeight="Bold" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center" Width="280" Height="20" Margin="50,0,0,0"></TextBlock>
+        </StackPanel>
 
+
+        <StackPanel Visibility="{Binding ProgressStatusVisibility, Source={StaticResource MainVm}}"  Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="4" VerticalAlignment="Center" HorizontalAlignment="Center" Orientation="Horizontal" >
+            <TextBlock Text="Success"  Foreground="LawnGreen" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" Width="60" Margin="0,10,0,0"></TextBlock>
+
+            <TextBlock Text="{Binding SuccessCount,Source={StaticResource MainVm}}"  Foreground="White" FontWeight="Bold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Width="30" Margin="0,10,0,0" TextAlignment="Center"></TextBlock>
+            <TextBlock Text="Failed" Foreground="OrangeRed" FontWeight="Bold" FontSize="15" HorizontalAlignment="Center" VerticalAlignment="Center" Width="60" Margin="0,10,0,0"></TextBlock>
+            <TextBlock Text="{Binding FailureCount,Source={StaticResource MainVm}}" Foreground="White" FontWeight="Bold" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Width="30" Margin="0,10,0,0" TextAlignment="Center"></TextBlock>
+        </StackPanel>
     </Grid>
 </Window>
 

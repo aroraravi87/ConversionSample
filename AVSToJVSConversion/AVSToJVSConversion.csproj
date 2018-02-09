@@ -129,6 +129,7 @@
     <Compile Include="BLL\LineValidator.cs" />
     <Compile Include="DLL\OperationDao.cs" />
     <Compile Include="ViewModel\Command.cs" />
+    <Compile Include="ViewModel\DelegateCommand.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

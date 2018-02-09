@@ -79,6 +79,9 @@ namespace AVSToJVSConversion.BLL
             dc = new DataColumn("ParameterCount", typeof(System.Int16));
             dtForMethodsAvailable.Columns.Add(dc);
 
+            dc = new DataColumn("ContainsGlobalTable", typeof(System.Int16));
+            dtForMethodsAvailable.Columns.Add(dc);
+
             return dtForMethodsAvailable;
         }
 

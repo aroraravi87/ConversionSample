@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.IO;
 using System.IO.Packaging;
 using System.Linq;
@@ -21,39 +22,6 @@ namespace AVSToJVSConversion.ViewModel
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-
-        #region === [Properties]================================
-
-        public ICommand SelectCommand { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="properyName"></param>
-        private void RaisedPropertyChanged(string properyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(properyName));
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public MainWindowViewModel()
-        {
-
-            if (_validateError == null)
-            {
-                _validateError = new sc.Label();
-                ErrorMessage = string.Empty;
-            }
-            SelectCommand = new CustomCommand(OnActionExecute);
-        }
-        #endregion
 
         #region === [Properties]================================
 
@@ -132,19 +100,157 @@ namespace AVSToJVSConversion.ViewModel
             }
         }
 
+        private string _pageCountMessage;
 
-        private int _progressStatus;
-
-        public int ProgressStatus
+        public string PageCountMessage
         {
-            get { return _progressStatus; }
+            get { return _pageCountMessage; }
             set
             {
-                _progressStatus = value;
-                RaisedPropertyChanged("ProgressStatus");
+                _pageCountMessage = value;
+                RaisedPropertyChanged("PageCountMessage");
             }
         }
 
+
+
+        private int _progressStatus;
+
+        //public int ProgressStatus
+        //{
+        //    get { return _progressStatus; }
+        //    set
+        //    {
+        //        _progressStatus = value;
+        //        RaisedPropertyChanged("ProgressStatus");
+        //    }
+        //}
+
+        private int _mlsFileCount;
+
+        public int MlsFileCount
+        {
+            get { return _mlsFileCount; }
+            set
+            {
+                _mlsFileCount = value;
+                RaisedPropertyChanged("MlsFileCount");
+            }
+        }
+        private Visibility _progressVisibility;
+
+        public Visibility ProgressVisibility
+        {
+            get { return _progressVisibility; }
+            set
+            {
+                _progressVisibility = value;
+                RaisedPropertyChanged("ProgressVisibility");
+            }
+        }
+
+        private int _sucessCount;
+
+        public int SuccessCount
+        {
+            get { return _sucessCount; }
+            set
+            {
+                _sucessCount = value;
+                RaisedPropertyChanged("SuccessCount");
+            }
+        }
+        private int _failureCount;
+
+        public int FailureCount
+        {
+            get { return _failureCount; }
+            set
+            {
+                _failureCount = value;
+                RaisedPropertyChanged("FailureCount");
+            }
+        }
+        private Visibility _progressStatusVisibility;
+
+        public Visibility ProgressStatusVisibility
+        {
+            get { return _progressStatusVisibility; }
+            set
+            {
+                _progressStatusVisibility = value;
+                RaisedPropertyChanged("ProgressStatusVisibility");
+            }
+        }
+        #endregion
+
+
+
+        #region === [Constructor]================================
+
+
+        private Utility _utility = null;
+
+        public ICommand SelectCommand { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private BackgroundWorker backGroundWorker;
+        private ICommand instigateWorkCommand { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="properyName"></param>
+        private void RaisedPropertyChanged(string properyName)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(properyName));
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public MainWindowViewModel()
+        {
+            SelectCommand = new CustomCommand(OnActionExecute);
+            backGroundWorker = new BackgroundWorker();
+            _utility = new Utility();
+            MlsFileCount = 0;
+            ProgressVisibility = Visibility.Collapsed;
+            ProgressStatusVisibility = Visibility.Collapsed;
+            SuccessCount = 0;
+            FailureCount = 0;
+        }
+
+
+        // your UI binds to this command in order to kick off the work
+        public ICommand InstigateWorkCommand
+        {
+            get { return this.instigateWorkCommand; }
+        }
+
+        public int ProgressStatus
+        {
+            get { return this._progressStatus; }
+            set
+            {
+                if (this._progressStatus != value)
+                {
+                    this._progressStatus = value;
+                    RaisedPropertyChanged("ProgressStatus");
+                }
+            }
+        }
+
+
+
+        public void ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            this.ProgressStatus = e.ProgressPercentage;
+        }
 
         #endregion
 
@@ -192,9 +298,6 @@ namespace AVSToJVSConversion.ViewModel
                     ValidateError.Opacity = 0;
                     ErrorMessage = string.Empty;
                     Status = false;
-                    Operations op=new Operations();
-                   // string str = CheckWhileNew("while(((isactive && ismain>0)) ||(IsDeleted && IsMain))");
-                    //string str = CheckInitilize("  TablePtr tran_list = tblMasterDetails, empty;");
                     break;
 
             }
@@ -202,363 +305,13 @@ namespace AVSToJVSConversion.ViewModel
         }
 
 
-
-        private string CheckWhileNew(string line)
-        {
-            Dictionary<string, string> strList = new Dictionary<string, string>();
-            string substr = "";
-            bool openbracket = false;
-            bool closebracket = false;
-            List<char> symbolArray1 = new List<char>() { '(', ')' };
-
-            StringBuilder str = new StringBuilder();
-            char[] chars;
-            int counter = 1;
-            int index = 0;
-            int openCount = 0;
-            if (line != null)
-            {
-                if (line.StartsWith("while") && symbolArray1.Any(n => line.ToCharArray().Contains(n)))
-                {
-                    substr = line.Substring(line.IndexOf('('), line.LastIndexOf(')') - line.IndexOf('(') + 1);
-                    chars = substr.ToCharArray();
-                    //while(((isactive && ismain>0)) ||(IsDeleted))
-                    foreach (var item in chars)
-                    {
-                        if (item.Equals('('))
-                        {
-                            openbracket = true;
-                            index++;
-                            closeBracket = false;
-                            continue;
-                        }
-                        if (item.Equals(')'))
-                        {
-                            closeBracket = true;
-                            index++;
-
-                            if (chars[chars.Length - 1] != item)
-                            {
-                                continue;
-                            }
-
-                        }
-                        if ((item.Equals('&') && chars[index - 1] == '&'))
-                        {
-                            closeBracket = true;
-                        }
-
-                        if ((item.Equals('|') && chars[index - 1] == '|'))
-                        {
-                            closeBracket = true;
-                        }
-
-                        if ((item.Equals('&') && chars[index - 1] == '&') || closeBracket)
-                        {
-                            if (!string.IsNullOrWhiteSpace(Convert.ToString(str)) && str.Length > 0 && !symbolArray1.Any(x => str.ToString().Contains(x)))
-                            {
-                                line = line.Replace(str.ToString(), "StringLiteral" + counter);
-                                strList.Add(string.Concat("StringLiteral", counter), str.ToString());
-                                counter++;
-                                index++;
-                                closeBracket = false;
-                            }
-                            else
-                            {
-                                index--;
-                            }
-                            str.Clear();
-                        }
-
-                        if ((item.Equals('|') && chars[index - 1] == '|') || closeBracket)
-                        {
-                            if (!string.IsNullOrWhiteSpace(Convert.ToString(str)) && str.Length > 0 && !symbolArray1.Any(x => str.ToString().Contains(x)))
-                            {
-                                line = line.Replace(str.ToString(), "StringLiteral" + counter);
-                                strList.Add(string.Concat("StringLiteral", counter), str.ToString());
-
-                                counter++;
-                                index++;
-                                closeBracket = false;
-                            }
-                            else
-                            {
-                                index--;
-                            }
-                            str.Clear();
-                        }
-                        if (item != '&' && item != '|')
-                        {
-                            str.Append(item);
-                            index++;
-                        }
-                        else
-                            index++;
-
-                    }
-                }
-            }
-            strList = strList;
-            return line;
-        }
-
-
-
-
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="line"></param>
-        /// <returns></returns>
-        private string CheckWhile(string line)
-        {
-            string subStr = string.Empty;
-            List<char> symbolArray = new List<char>() { '(', ')' };
-            if (line.StartsWith("while") && symbolArray.Any(n => line.ToCharArray().Contains(n)))
-            {
-                if (line.Contains("(("))
-                    subStr = line.Substring(line.IndexOf('(') + 2, line.LastIndexOf(')') - line.IndexOf('(') - 1);
-                else
-                    subStr = line.Substring(line.IndexOf('(') + 1, line.LastIndexOf(')') - line.IndexOf('(') - 1);
-
-                line = line.Replace(subStr, ValidateSymbols(subStr, line));
-            }
-            return line;
-        }
-        bool openbracket = false;
-        bool closeBracket = false;
-        bool appendflag = false;
-        /// <summary>
         /// 
-        /// </summary>
-        /// <param name="strSymbol"></param>
-        /// <param name="line"></param>
-        /// <returns></returns>
-        private string ValidateSymbols(string strSymbol, string line)
-        {
-
-            string subNotStr = string.Empty;
-            string subStringValue = string.Empty;
-            StringBuilder strbuilder = new StringBuilder();
-            List<char> symbolList = new List<char>() { '=', '<', '>' };
-            int counter = 1;
-
-
-            string[] strSymbolList = strSymbol.Split(new char[] { '&' }, StringSplitOptions.RemoveEmptyEntries);
-
-
-            if (strSymbol.Contains('!') && !strSymbol.Contains("&&") && !strSymbol.Contains("||"))
-            {
-                if (strSymbol.Contains(')'))
-                {
-                    if (strSymbol[strSymbol.LastIndexOf(')') - 1].Equals(')'))
-                    {
-                        strSymbol = strSymbol.Substring(1, strSymbol.Length - 2);
-                        closeBracket = true;
-                    }
-                    strSymbol = strSymbol.Replace(strSymbol,
-                        closeBracket ? string.Concat(strSymbol, "!=", 0, ')') : string.Concat(strSymbol, "!=", 0));
-                    if (strSymbol.Trim().StartsWith("!"))
-                    {
-                        strSymbol = strSymbol.Substring(strSymbol.IndexOf('!') + 1,
-                            strSymbol.Length - strSymbol.IndexOf('!') - 1);
-                    }
-
-                    closeBracket = false;
-                }
-                else
-                {
-                    subNotStr = strSymbol.Substring(1, strSymbol.Length - 1);
-                    strSymbol = strSymbol.Replace(strSymbol, string.Concat(subNotStr, "!=", 0));
-                }
-                return strSymbol;
-            }
-            if (strSymbolList.Length > 0 && (strSymbol.Contains("&&") || strSymbol.Contains("||")))
-            {
-                string subItem = string.Empty;
-                string value = string.Empty;
-                foreach (var itemStr in strSymbolList)
-                {
-                    if (itemStr.Contains("||"))
-                    {
-                        string[] strOR = itemStr.Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
-
-                        foreach (string item in strOR)
-                        {
-                            if (item.Trim().StartsWith("("))
-                            {
-                                openbracket = true;
-                                subItem = item.TrimEnd()
-                                    .Substring(item.IndexOf('(') + 1,
-                                        item.Contains(')') ? item.LastIndexOf(')') - (item.Count(n => n == ')') - 1) : item.LastIndexOf(' ') - 1);
-                                if (item.Contains('(') && !item.Contains(')'))
-                                {
-                                    openbracket = true;
-                                    closeBracket = false;
-                                }
-                                else if (item.Contains(')') && !item.Contains('('))
-                                {
-                                    openbracket = false;
-                                    closeBracket = true;
-                                }
-                            }
-
-                            else if (item.Contains(')'))
-                            {
-
-                                if (item[item.LastIndexOf(')') - 1] != ')')
-                                {
-                                    subItem = item.Substring(0, item.LastIndexOf(')'));
-                                    closeBracket = true;
-                                }
-                                else
-                                    subItem = item;
-                                openbracket = false;
-                            }
-                            else
-                            {
-                                subItem = item;
-                            }
-                            if (symbolList.Any(x => item.ToCharArray().Contains(x)))
-                            {
-                                strbuilder.Append(item);
-                            }
-                            else
-                            {
-                                value = ValidateSymbols(subItem.Trim(), line);
-                                if (openbracket)
-                                    value = '(' + value;
-                                if (closeBracket)
-                                    value = value + ')';
-
-                                strbuilder.Append(value);
-
-
-                            }
-                            if (counter < strOR.Length)
-                                strbuilder.Append(" || ");
-                            counter++;
-                        }
-                    }
-
-                    else
-                    {
-                        if (itemStr.Trim().StartsWith("("))
-                        {
-                            if (strSymbol.Count(n => n == '(') == strSymbol.Count(n => n == ')'))
-                                subItem = itemStr.TrimEnd()
-                                    .Substring(itemStr.IndexOf('(') + 1, itemStr.LastIndexOf(')') - 1);
-                            else
-                            {
-
-                                subItem = itemStr.TrimEnd()
-                                    .Substring(itemStr.IndexOf('(') + 1, itemStr.Trim().Contains(')') ? itemStr.LastIndexOf(')') : itemStr.LastIndexOf(' ') - 2);
-                                appendflag = true;
-                                closeBracket = true;
-                            }
-                            openbracket = true;
-
-                        }
-                        else if (itemStr.Contains(')'))
-                        {
-                            if (itemStr[itemStr.LastIndexOf(')') - 1] != ')')
-                            {
-                                subItem = itemStr.Substring(0, itemStr.LastIndexOf(')'));
-                                closeBracket = true;
-                            }
-                            else
-                            {
-                                subItem = itemStr;
-                            }
-                            openbracket = false;
-                        }
-                        else
-                        {
-                            subItem = itemStr;
-                        }
-
-
-                        if (symbolList.Any(x => itemStr.ToCharArray().Contains(x)))
-                        {
-                            strbuilder.Append(string.Concat(" &&", itemStr, "&&"));
-                        }
-                        else
-                        {
-                            value = ValidateSymbols(subItem.Trim(), line);
-                            if (openbracket)
-                                value = '(' + value;
-                            if (closeBracket)
-                                value = value + ')';
-                            strbuilder.Append(string.Concat(" &&", value, "&&"));
-                        }
-                    }
-                }
-
-                subStringValue = strbuilder.ToString();
-
-                if (subStringValue.Trim().StartsWith("&&"))
-                {
-                    subStringValue = subStringValue.Substring(3, strbuilder.ToString().Length - 3);
-
-                }
-                if (subStringValue.Trim().EndsWith("&&"))
-                {
-                    subStringValue = subStringValue.Substring(0, subStringValue.LastIndexOf('&') - 1);
-                }
-                if (subStringValue.Trim().Contains("&& &&"))
-                {
-                    subStringValue = subStringValue.Replace("&& &&", "&&");
-                }
-                return subStringValue;
-            }
-            else if (strSymbol.Contains("="))
-            {
-                return strSymbol;
-            }
-
-            else
-            {
-                if (strSymbol.Contains(')'))
-                {
-                    if (strSymbol[strSymbol.LastIndexOf(')') - 1].Equals(')'))
-                    {
-                        if (strSymbol.Count(n => n == '(') == strSymbol.Count(n => n == ')'))
-                        {
-                            appendflag = true;
-                        }
-                        strSymbol = strSymbol.Substring(0, strSymbol.Length - (strSymbol.Count(n => n == ')') - 1));
-                        closeBracket = true;
-                    }
-                    else
-                    {
-                        strSymbol = strSymbol.Replace(')', ' ');
-                        closeBracket = true;
-                        appendflag = true;
-                    }
-                }
-
-
-
-                strSymbol = strSymbol.Replace(strSymbol,
-                    closeBracket ? !appendflag ? string.Concat(strSymbol, ">", 0, ')') : string.Concat(strSymbol, ">", 0, "))") : string.Concat(strSymbol, ">", 0));
-                closeBracket = false;
-                return strSymbol;
-            }
-        }
-
-
-
-
-
-
-
-        /// <summary>
-        /// 
-        /// </summary>
         private void ConvertAvsFiletoJvs()
         {
             bool IsSuccess = false;
-            InputProcessor inputProcessor2 = new InputProcessor();
             string emptyField = "**Missing Information :  ";
             if (string.IsNullOrEmpty(AVSPath) || string.IsNullOrEmpty(JVSPath))
             {
@@ -575,7 +328,11 @@ namespace AVSToJVSConversion.ViewModel
                 {
                     emptyField = emptyField + " JVS Output Path ";
                 }
-
+                if (_validateError == null)
+                {
+                    _validateError = new sc.Label();
+                    ErrorMessage = string.Empty;
+                }
                 ValidateError.Foreground = new SolidColorBrush(Colors.Red);
 
                 ValidateError.Content = emptyField;
@@ -585,35 +342,70 @@ namespace AVSToJVSConversion.ViewModel
             }
             else
             {
-                if (string.IsNullOrEmpty(LibraryPath))
-                {
-                    //ProgressStatus = Directory.EnumerateFiles(AVSPath, "*.mls").Count();
-                    IsSuccess = inputProcessor2.Process(AVSPath, AVSPath, JVSPath);
-                }
-                else
-                {
-                    //ProgressStatus = Directory.EnumerateFiles(AVSPath, "*.mls").Count();
-                    IsSuccess = inputProcessor2.Process(AVSPath, LibraryPath, JVSPath);
-                }
-                if (IsSuccess)
-                {
-                    ValidateError.Foreground = new SolidColorBrush(Colors.GreenYellow);
-                    ValidateError.Content = "*Conversion done sucessfully";
-                    ErrorMessage = "*Conversion done sucessfully";
-                }
-                else
-                {
-                    ValidateError.Content = "*Conversion failed,Please contact to administrator";
-                    ErrorMessage = "*Conversion failed,Please contact to administrator";
-                }
-                Status = IsSuccess;
-                AVSPath = string.Empty;
-                LibraryPath = string.Empty;
-                JVSPath = string.Empty;
-
+                backGroundWorker = new BackgroundWorker();
+                backGroundWorker.RunWorkerAsync();
+                backGroundWorker.DoWork += this.DoWork;
+                backGroundWorker.ProgressChanged += this.ProgressChanged;
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DoWork(object sender, DoWorkEventArgs e)
+        {
+            Thread t = new Thread(InitProcess);
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
+        }
+
+
+        private void InitProcess()
+        {
+            if (_validateError == null)
+            {
+                _validateError = new sc.Label();
+                ErrorMessage = string.Empty;
+            }
+            bool IsSuccess = false;
+            int counter = 0;
+            int ProgressPecentage = 1;
+
+            InputProcessor inputProcessor2 = new InputProcessor();
+            int filelength = Directory.EnumerateFiles(AVSPath, "*.mls").Count();
+            MlsFileCount = filelength;
+            ProgressVisibility = Visibility.Visible;
+            _utility.GetCustomLogAppender();
+            if (Directory.Exists(Path.Combine(ConfigurationManager.AppSettings["basePath"], "FailedScripts")))
+                Array.ForEach(Directory.GetFiles(Path.Combine(ConfigurationManager.AppSettings["basePath"], "FailedScripts")), File.Delete);
+            foreach (string file in Directory.EnumerateFiles(AVSPath, "*.mls"))
+            {
+
+                counter++;
+                // Thread.Sleep(1000);
+                inputProcessor2.Process(AVSPath,
+                     string.IsNullOrEmpty(LibraryPath) ? AVSPath : LibraryPath,
+                     JVSPath, file);
+
+                ProgressStatus = counter;
+                ProgressPecentage =
+                    Convert.ToInt32((Convert.ToDecimal(ProgressStatus) / Convert.ToDecimal(filelength)) *
+                                    Convert.ToDecimal(100));
+                PageCountMessage = string.Format("Status : {0}%, {1} out of {2} files completed.", ProgressPecentage,
+                    ProgressStatus, filelength);
+            }
+
+            ProgressStatusVisibility = Visibility.Visible;
+            SuccessCount = Directory.GetFiles(JVSPath).Count();
+            FailureCount = Directory.GetFiles(Path.Combine(ConfigurationManager.AppSettings["basePath"],
+                "FailedScripts")).Count();
+            AVSPath = string.Empty;
+            LibraryPath = string.Empty;
+            JVSPath = string.Empty;
+
+        }
 
         #endregion
 

@@ -19,10 +19,12 @@ namespace AVSToJVSConversion.BLL
     class IncludeFileHandler
     {
         private readonly Operations _operations;
-        
+        private readonly Utility _utility;
+
         public IncludeFileHandler()
         {
             _operations = new Operations();
+            _utility = new Utility();
         }
 
         public void ManageIncludes(string includeList, string libraryPath, DataTable dtForMethodsAvailable)
@@ -34,6 +36,7 @@ namespace AVSToJVSConversion.BLL
                 string[] includeFileNames;
                 string fileName;
                 string includeListOfIncludeFile;
+                int containsGlobalTable=0;
 
                 if (includeList.Contains(","))
                 {
@@ -48,6 +51,7 @@ namespace AVSToJVSConversion.BLL
 
                 for (int i = 0; i < includeFileNames.Length; i++)
                 {
+                    containsGlobalTable=0;
                     foreach (string file in Directory.EnumerateFiles(libraryPath, includeFileNames[i] + ".mls"))
                     {
                         fileName = file.Replace(libraryPath + "\\", "");
@@ -63,7 +67,15 @@ namespace AVSToJVSConversion.BLL
                         }
                         _operations.RemoveIncludeListStatement(dtForFileOfInclude);
                         _operations.ConvertInitialization(dtForFileOfInclude, null, false);
-                        _operations.GetMethodsListInFile(dtForFileOfInclude, fileName, dtForMethodsAvailable);
+                        if (_utility.CheckGlobalTable(dtForFileOfInclude, "argt") ||
+                            _utility.CheckGlobalTable(dtForFileOfInclude, "returnt"))
+                        {
+                            containsGlobalTable = 1;
+                        }
+                        _operations.GetMethodsListInFile(dtForFileOfInclude, fileName, dtForMethodsAvailable, containsGlobalTable);
+
+                        _utility.destroyDT(dtForFileOfInclude);
+                        _utility.destroyDT(dtForLiterals);
                     }
                 }
             }
