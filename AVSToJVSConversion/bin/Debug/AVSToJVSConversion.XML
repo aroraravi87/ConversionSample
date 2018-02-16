@@ -37,6 +37,335 @@
             </summary>
             <param name="dtForFile"></param>
         </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetIncludeStatement(System.Boolean,System.String,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="methodStartFlag"></param>
+            <param name="returnLine"></param>
+            <param name="includeList"></param>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.DetectIncludeStatement(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetIncludeFileName(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.DetectMethodNameStartPointer(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.DetectMethodNameEndPointer(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetMethodName(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetMethodNameTillEnd(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetMethodNameEnding(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.DetectMethodStartPointer(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.DetectMethodPrototype(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.DetectMethodEndPointer(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetOpenCurlyBracescount(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetCloseCurlyBracescount(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetSmallBracketOpenCount(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetSmallBracketCloseCount(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetParameterCount(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.DetectMultipleLines(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetMethodNamesInALine(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.MethodNameWithoutParameter(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="methodName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetCount(System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="keyword"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.CheckVariableDeclaration(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.CheckAVSVariableDeclaration(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.CheckVariableType(System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="variableType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetPositionOfVariableTypeInLine(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetPositionOfAVSVariableTypeInLine(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.CheckVariableTypeName(System.String,System.String,System.String@)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="variableType"></param>
+            <param name="element"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetVariableTypePosition(System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="variableType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetVariableList(System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="variableList"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetVariableList(System.String,System.Data.DataTable,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="dtForVariables"></param>
+            <param name="methodName"></param>
+            <param name="fileName"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetVariableListOfGivenType(System.String,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="variableList"></param>
+            <param name="variableType"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.CheckWhetherAppendShouldBeAddedOrNot(System.String,System.Int32,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <param name="startindex"></param>
+            <param name="excudeMethods"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.CheckInVariableList(System.Data.DataTable,System.String,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="dtForVariables"></param>
+            <param name="enumName"></param>
+            <param name="methodName"></param>
+            <param name="fileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.referVariableFromLibraryInLine(System.Data.DataTable,System.Data.DataRow,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="dtForVariables"></param>
+            <param name="drs"></param>
+            <param name="methodName"></param>
+            <param name="fileName"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.AddInIncludeDT(System.Data.DataTable,System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="dtForInclude"></param>
+            <param name="include"></param>
+            <param name="className"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.CorrectTheVariableList(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="variableList"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.GetCustomLogAppender">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.destroyDT(System.Data.DataTable)">
+            <summary>
+            
+            </summary>
+            <param name="dataTable"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.CheckMain(System.Data.DataTable)">
+            <summary>
+            
+            </summary>
+            <param name="dtForFile"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.CheckMain(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="line"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.CheckGlobalTable(System.Data.DataTable,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="dtForFile"></param>
+            <param name="globalTableName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.BLL.Utility.closeSQLConnection(System.Data.SqlClient.SqlConnection,System.Data.SqlClient.SqlDataReader)">
+            <summary>
+            
+            </summary>
+            <param name="_conn"></param>
+            <param name="_dataReader"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.Common.Helpers.ForEachNext``1(System.Collections.Generic.IList{``0},System.Action{``0,``0})">
+            <summary>
+            
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="collection"></param>
+            <param name="func"></param>
+        </member>
+        <member name="M:AVSToJVSConversion.Common.Helpers.GetSetting(System.String,System.String)">
+            <summary>
+            
+            </summary>
+            <param name="key"></param>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AVSToJVSConversion.Common.Helpers.UpdateAppSettingFile(AVSToJVSConversion.Model.SettingModel)">
+            <summary>
+            
+            </summary>
+            <param name="objSettingModel"></param>
+            <returns></returns>
+        </member>
         <member name="M:AVSToJVSConversion.DLL.DbConnection.GetSqlConnection">
             <summary>
             
@@ -80,6 +409,11 @@
             Application Entry Point.
             </summary>
         </member>
+        <member name="T:AVSToJVSConversion.BLL.LineValidator">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="M:AVSToJVSConversion.BLL.LineValidator.Operation10(System.String)">
             <summary>
             
@@ -93,7 +427,7 @@
             </summary>
             <param name="properyName"></param>
         </member>
-        <member name="M:AVSToJVSConversion.ViewModel.MainWindowViewModel.#ctor">
+        <member name="M:AVSToJVSConversion.ViewModel.MainWindowViewModel.#ctor(AVSToJVSConversion.ViewModel.IDialogService)">
             <summary>
             
             </summary>
@@ -116,6 +450,62 @@
             </summary>
             <param name="sender"></param>
             <param name="e"></param>
+        </member>
+        <member name="F:AVSToJVSConversion.ViewModel.RelayCommand._action">
+            <summary>
+            Creates a new command that can always execute.
+            </summary>
+        </member>
+        <member name="M:AVSToJVSConversion.ViewModel.RelayCommand.#ctor(System.Action{System.Object})">
+            <summary>
+            Initializes a new instance of <see cref="T:AVSToJVSConversion.ViewModel.RelayCommand"/> that can always execute.
+            </summary>
+            <param name="execute">The execution logic.</param>
+        </member>
+        <member name="M:AVSToJVSConversion.ViewModel.RelayCommand.#ctor(System.Action{System.Object},System.Predicate{System.Object})">
+            <summary>
+            Initializes a new instance of <see cref="T:AVSToJVSConversion.ViewModel.RelayCommand"/>.
+            </summary>
+            <param name="execute">The execution logic.</param>
+            <param name="canExecute">The execution status logic.</param>
+        </member>
+        <member name="M:AVSToJVSConversion.ViewModel.RelayCommand.CanExecute(System.Object)">
+            <summary>
+            Determines whether this <see cref="T:AVSToJVSConversion.ViewModel.RelayCommand"/> can execute in its current state.
+            </summary>
+            <param name="parameter">
+            Data used by the command. If the command does not require data to be passed, this object can be set to null.
+            </param>
+            <returns>True if this command can be executed; otherwise, false.</returns>
+        </member>
+        <member name="M:AVSToJVSConversion.ViewModel.RelayCommand.Execute(System.Object)">
+            <summary>
+            Executes the <see cref="T:AVSToJVSConversion.ViewModel.RelayCommand"/> on the current command target.
+            </summary>
+            <param name="parameter">
+            Data used by the command. If the command does not require data to be passed, this object can be set to null.
+            </param>
+        </member>
+        <member name="E:AVSToJVSConversion.ViewModel.RelayCommand.CanExecuteChanged">
+            <summary>
+            Raised when RaiseCanExecuteChanged is called.
+            </summary>
+        </member>
+        <member name="M:AVSToJVSConversion.ViewModel.SettingViewModel.RaisedPropertyChanged(System.String)">
+            <summary>
+            
+            </summary>
+            <param name="properyName"></param>
+        </member>
+        <member name="T:AVSToJVSConversion.Views.Setting">
+            <summary>
+            Setting
+            </summary>
+        </member>
+        <member name="M:AVSToJVSConversion.Views.Setting.InitializeComponent">
+            <summary>
+            InitializeComponent
+            </summary>
         </member>
         <member name="T:AVSToJVSConversion.Views.MainWindow">
             <summary>

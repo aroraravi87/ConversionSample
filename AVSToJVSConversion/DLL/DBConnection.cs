@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SqlClient;
+﻿
 
 
 namespace AVSToJVSConversion.DLL
 {
+    using System;
+    using System.Configuration;
+    using System.Data;
+    using System.Data.SqlClient;
+
     class DbConnection:IDisposable
     {
         private static SqlConnection _connection = null;

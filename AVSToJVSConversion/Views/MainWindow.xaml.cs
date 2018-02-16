@@ -1,26 +1,19 @@
-﻿using System.Windows;
-
-/*****************************************************************************
-File Name:              (MainWindow.mls)
-+------+----------+------------+-----------------------------------------------------------------------+
-| S.No.| Date     | Who        | Description                                                            |
-+------+----------+------------+-----------------------------------------------------------------------+
-|      | 10 Jun   | Ajey Raghav| Initial version                                                       |
-+------+----------+------------+-----------------------------------------------------------------------+
-
-Description:       
-
-*****************************************************************************/
+﻿
 
 namespace AVSToJVSConversion.Views
 {
-
-    public partial class MainWindow : Window
+    using System.Windows;
+    using ViewModel;
+    
+    public partial class MainWindow : Window,IDialog
     {
         public MainWindow()
         {
             InitializeComponent();
-
+            WindowStartupLocation = WindowStartupLocation.CenterScreen;
         }
+
+
+        public Model.SettingModel ObjSettingModel { get; set; }
     }
 }

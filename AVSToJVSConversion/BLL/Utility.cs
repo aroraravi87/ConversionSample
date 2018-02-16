@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 /*****************************************************************************
 File Name:              (AVS_To_JVS.mls)
 +------+----------+------------+-----------------------------------------------------------------------+
@@ -16,17 +10,36 @@ File Name:              (AVS_To_JVS.mls)
 Description:       
 
 *****************************************************************************/
-using AVSToJVSConversion.Common;
-using AVSToJVSConversion.DLL;
+
 
 namespace AVSToJVSConversion.BLL
 {
+    using System;
+    using System.Data;
+    using System.Data.SqlClient;
+    using Common;
+    using DLL;
+
     internal class Utility
     {
+       
+        #region ==[Private Members ]======================
+        
         private SqlConnection _conn = null;
-        private SqlDataReader _dataReader = null;
+        private SqlDataReader _dataReader = null; 
+       
+        #endregion
 
+        #region ==[Public Members]========================
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="methodStartFlag"></param>
+        /// <param name="returnLine"></param>
+        /// <param name="includeList"></param>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public string GetIncludeStatement(bool methodStartFlag, string returnLine, string includeList, string line)
         {
             if (!methodStartFlag && DetectIncludeStatement(returnLine))
@@ -43,6 +56,11 @@ namespace AVSToJVSConversion.BLL
             return includeList;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public bool DetectIncludeStatement(string line)
         {
             if (line.Contains("#include"))
@@ -51,7 +69,12 @@ namespace AVSToJVSConversion.BLL
             }
             return false;
         }
-
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public string GetIncludeFileName(string line)
         {
             string includeFileName;
@@ -67,7 +90,12 @@ namespace AVSToJVSConversion.BLL
 
             return includeFileName;
         }
-
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public bool DetectMethodNameStartPointer(string line)
         {
             if (line.Contains("("))
@@ -76,7 +104,12 @@ namespace AVSToJVSConversion.BLL
             }
             return false;
         }
-
+       
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public bool DetectMethodNameEndPointer(string line)
         {
             if (line.Contains(")"))
@@ -86,6 +119,11 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+       /// <summary>
+       /// 
+       /// </summary>
+       /// <param name="line"></param>
+       /// <returns></returns>
         public string GetMethodName(string line)
         {
             string methodName = "";
@@ -118,6 +156,11 @@ namespace AVSToJVSConversion.BLL
             return methodName;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public string GetMethodNameTillEnd(string line)
         {
             string methodName = "";
@@ -148,6 +191,11 @@ namespace AVSToJVSConversion.BLL
             return methodName;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public string GetMethodNameEnding(string line)
         {
             string methodName = "";
@@ -159,6 +207,11 @@ namespace AVSToJVSConversion.BLL
             return methodName;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public bool DetectMethodStartPointer(string line)
         {
             if (line.Contains("{"))
@@ -168,6 +221,11 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public bool DetectMethodPrototype(string line)
         {
             if (line.Contains(";"))
@@ -177,6 +235,11 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public bool DetectMethodEndPointer(string line)
         {
             if (line.Contains("}"))
@@ -185,7 +248,12 @@ namespace AVSToJVSConversion.BLL
             }
             return false;
         }
-
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public int GetOpenCurlyBracescount(string line)
         {
             int count = 0;
@@ -204,6 +272,11 @@ namespace AVSToJVSConversion.BLL
 
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public int GetCloseCurlyBracescount(string line)
         {
             int count = 0;
@@ -220,7 +293,12 @@ namespace AVSToJVSConversion.BLL
             }
             return count;
         }
-
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public int GetSmallBracketOpenCount(string line)
         {
             int count = 0;
@@ -239,6 +317,11 @@ namespace AVSToJVSConversion.BLL
             return count;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public int GetSmallBracketCloseCount(string line)
         {
             int count = 0;
@@ -256,7 +339,12 @@ namespace AVSToJVSConversion.BLL
 
             return count;
         }
-
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public int GetParameterCount(string line)
         {
             int parametersCount;
@@ -287,6 +375,11 @@ namespace AVSToJVSConversion.BLL
             return parametersCount;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public bool DetectMultipleLines(string line)
         {
             int smallBracketOpenCount;
@@ -302,6 +395,11 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public string[] GetMethodNamesInALine(string line)
         {
             int smallBracketOpen;
@@ -358,11 +456,22 @@ namespace AVSToJVSConversion.BLL
             return methods;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="methodName"></param>
+        /// <returns></returns>
         public string MethodNameWithoutParameter(string methodName)
         {
             return methodName.Substring(0, methodName.IndexOf("(")).Trim();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="keyword"></param>
+        /// <returns></returns>
         public int GetCount(string line, string keyword)
         {
             int count = 0;
@@ -381,6 +490,11 @@ namespace AVSToJVSConversion.BLL
             return count;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public bool CheckVariableDeclaration(string line)
         {
             try
@@ -401,6 +515,11 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public bool CheckAVSVariableDeclaration(string line)
         {
             try
@@ -421,6 +540,12 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="variableType"></param>
+        /// <returns></returns>
         public bool CheckVariableType(string line, string variableType)
         {
             int position = -1;
@@ -451,6 +576,11 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public int GetPositionOfVariableTypeInLine(string line)
         {
             int largest = -1;
@@ -472,6 +602,11 @@ namespace AVSToJVSConversion.BLL
             return largest;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public int GetPositionOfAVSVariableTypeInLine(string line)
         {
             int largest = -1;
@@ -493,6 +628,13 @@ namespace AVSToJVSConversion.BLL
             return largest;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="variableType"></param>
+        /// <param name="element"></param>
+        /// <returns></returns>
         public bool CheckVariableTypeName(string line, string variableType, out string element)
         {
 
@@ -527,6 +669,12 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="variableType"></param>
+        /// <returns></returns>
         public int GetVariableTypePosition(string line, string variableType)
         {
             int position = -1;
@@ -557,6 +705,12 @@ namespace AVSToJVSConversion.BLL
             return -1;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="variableList"></param>
+        /// <returns></returns>
         public string GetVariableList(string line, string variableList)
         {
             try
@@ -574,7 +728,53 @@ namespace AVSToJVSConversion.BLL
             }
             return variableList;
         }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="dtForVariables"></param>
+        /// <param name="methodName"></param>
+        /// <param name="fileName"></param>
+        public void GetVariableList(string line, DataTable dtForVariables, string methodName, string fileName)
+        {
+            string variableList = "";
+            DataRow dr;
+            try
+            {
+                _dataReader = OperationDao.ExecuteDataReader(Constants.JVSVARIABLELISTSQL, out _conn);
+                while (_dataReader.Read())
+                {
+                    variableList = GetVariableListOfGivenType(line, variableList,
+                        _dataReader.GetValue(0) + " ");
+                    variableList = CorrectTheVariableList(variableList);
+                    if (!variableList.Equals(""))
+                    {
+                        for (int i = 0; i < GetCount(variableList, ",") + 1; i++)
+                        {
+                            dr = dtForVariables.Rows.Add();
+                            dr[0] = fileName;
+                            dr[1] = methodName;
+                            dr[2] = _dataReader.GetValue(0).ToString();
+                            dr[3] = variableList.Split(',')[i];
+                        }
+                        variableList = "";
+                    }
+                }
+            }
+            finally
+            {
+                closeSQLConnection(_conn, _dataReader);
+            }
+        }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="variableList"></param>
+        /// <param name="variableType"></param>
+        /// <returns></returns>
         private string GetVariableListOfGivenType(string line, string variableList, string variableType)
         {
             int positionOfVariableType = -1;
@@ -663,6 +863,13 @@ namespace AVSToJVSConversion.BLL
             return variableList;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="startindex"></param>
+        /// <param name="excudeMethods"></param>
+        /// <returns></returns>
         public bool CheckWhetherAppendShouldBeAddedOrNot(string line, int startindex, string excudeMethods)
         {
             int methodEndPosition;
@@ -758,47 +965,104 @@ namespace AVSToJVSConversion.BLL
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtForVariables"></param>
+        /// <param name="enumName"></param>
+        /// <param name="methodName"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         public bool CheckInVariableList(DataTable dtForVariables, string enumName, string methodName, string fileName)
         {
             foreach (DataRow drs in dtForVariables.Rows)
             {
-                if (drs[1].ToString().Equals(methodName) && drs[0].ToString().Equals(fileName))
+                if (drs[1].ToString().Equals("") ||
+                    (drs[1].ToString().Equals(methodName) && drs[0].ToString().Equals(fileName)))
                 {
-                    if (drs[2].ToString().Contains(enumName))
+                    if (drs[3].ToString().Trim().Equals(enumName))
                     {
-                        string[] parameter = drs[2].ToString().Split(',');
-                        for (int i = 0; i < parameter.Length; i++)
-                        {
-                            if (parameter[i].Trim().Equals(enumName))
-                            {
-                                return false;
-                            }
-                        }
-                    }
-
-                    if (drs[3].ToString().Contains(enumName))
-                    {
-                        string[] variable = drs[3].ToString().Split(',');
-                        for (int i = 0; i < variable.Length; i++)
-                        {
-                            if (variable[i].Trim().Contains("="))
-                            {
-                                if (variable[i].Trim().Split('=')[0].Trim().Equals(enumName))
-                                {
-                                    return false;
-                                }
-                            }
-                            if (variable[i].Trim().Equals(enumName))
-                            {
-                                return false;
-                            }
-                        }
+                        return false;
                     }
                 }
             }
             return true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtForVariables"></param>
+        /// <param name="drs"></param>
+        /// <param name="methodName"></param>
+        /// <param name="fileName"></param>
+        public void referVariableFromLibraryInLine(DataTable dtForVariables, DataRow drs, string methodName, string fileName)
+        {
+            DataRow[] datarows = dtForVariables.Select("MethodName='' AND FileName<>'" +
+                                                         fileName + "'");
+            foreach (DataRow dr in datarows)
+            {
+                if (drs[1].ToString().Contains(dr[3].ToString()))
+                {
+                    DataRow[] datarows2 = dtForVariables.Select("VariableName='" + dr[3].ToString() + "' AND FileName='" +
+                                                         fileName + "' AND MethodName IN ('','" + methodName + "')");
+                    if (datarows2.Length == 0)
+                    {
+                        int position = 0;
+                        int startIndex = 0;
+                        int endIndex;
+                        while (drs[1].ToString().IndexOf(dr[3].ToString(), position) >= 0)
+                        {
+                            position = drs[1].ToString().IndexOf(dr[3].ToString(), position);
+
+                            startIndex = drs[1].ToString().IndexOf(dr[3].ToString(), position);
+                            endIndex = startIndex + dr[3].ToString().Length - 1;
+                            if (startIndex > 0)
+                            {
+                                if (drs[1].ToString().ToCharArray()[startIndex - 1] == '.' ||
+                                    drs[1].ToString().ToCharArray()[startIndex - 1] == '_')
+                                {
+                                    position++;
+                                    continue;
+                                }
+                                if (Char.IsLetterOrDigit(drs[1].ToString().ToCharArray()[startIndex - 1]))
+                                {
+                                    position++;
+                                    continue;
+                                }
+                            }
+                            if (endIndex < drs[1].ToString().Length - 1)
+                            {
+                                if (drs[1].ToString().ToCharArray()[endIndex + 1] == '.' ||
+                                    drs[1].ToString().ToCharArray()[endIndex + 1] == '_')
+                                {
+                                    position++;
+                                    continue;
+                                }
+                                if (Char.IsLetterOrDigit(drs[1].ToString().ToCharArray()[endIndex + 1]))
+                                {
+                                    position++;
+                                    continue;
+                                }
+                            }
+
+                            drs[1] = drs[1].ToString().Substring(0, startIndex) +
+                                     dr[0].ToString().Replace(".mls", "") + "." + dr[3].ToString() +
+                                     drs[1].ToString().Substring(endIndex + 1);
+
+                            position = position + dr[3].ToString().Length + 2;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtForInclude"></param>
+        /// <param name="include"></param>
+        /// <param name="className"></param>
         public void AddInIncludeDT(DataTable dtForInclude, string include, string className)
         {
             bool includeFlag = true;
@@ -817,6 +1081,11 @@ namespace AVSToJVSConversion.BLL
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="variableList"></param>
+        /// <returns></returns>
         public string CorrectTheVariableList(string variableList)
         {
             int openBracketCount = 0;
@@ -876,12 +1145,15 @@ namespace AVSToJVSConversion.BLL
             return returnList;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void GetCustomLogAppender()
         {
             string path = String.Concat("LogFile_", DateTime.Now.Day
                 , DateTime.Now.Month
-                , DateTime.Now.Year,"_",DateTime.Now.Hour,DateTime.Now.Minute,DateTime.Now.Second,".log");
-           
+                , DateTime.Now.Year, "_", DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second, ".log");
+
 
 
             log4net.Repository.ILoggerRepository repository = log4net.LogManager.GetRepository();
@@ -889,7 +1161,7 @@ namespace AVSToJVSConversion.BLL
             {
                 if (appender.Name.CompareTo("RollingFileAppender") == 0 && appender is log4net.Appender.FileAppender)
                 {
-                    log4net.Appender.FileAppender fileAppender = (log4net.Appender.FileAppender) appender;
+                    log4net.Appender.FileAppender fileAppender = (log4net.Appender.FileAppender)appender;
                     fileAppender.File = System.IO.Path.Combine(fileAppender.File, path);
 
                     fileAppender.ActivateOptions();
@@ -897,13 +1169,29 @@ namespace AVSToJVSConversion.BLL
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dataTable"></param>
         public void destroyDT(DataTable dataTable)
         {
-            if (dataTable != null)
-                dataTable.Dispose();
-            dataTable = null;
+            try
+            {
+                if (dataTable != null)
+                    dataTable.Dispose();
+                dataTable = null;
+            }
+            catch (Exception e)
+            {
+            }
+
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtForFile"></param>
+        /// <returns></returns>
         public bool CheckMain(DataTable dtForFile)
         {
             foreach (DataRow drs in dtForFile.Rows)
@@ -917,6 +1205,11 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <returns></returns>
         public bool CheckMain(string line)
         {
             if (line.Contains(" main()") ||
@@ -927,6 +1220,12 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtForFile"></param>
+        /// <param name="globalTableName"></param>
+        /// <returns></returns>
         public bool CheckGlobalTable(DataTable dtForFile, string globalTableName)
         {
             foreach (DataRow drs in dtForFile.Rows)
@@ -939,6 +1238,11 @@ namespace AVSToJVSConversion.BLL
             return false;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="_conn"></param>
+        /// <param name="_dataReader"></param>
         public void closeSQLConnection(SqlConnection _conn, SqlDataReader _dataReader)
         {
             try
@@ -948,8 +1252,9 @@ namespace AVSToJVSConversion.BLL
             }
             catch (Exception e)
             {
-            
+
             }
-        }
+        } 
+        #endregion
     }
 }

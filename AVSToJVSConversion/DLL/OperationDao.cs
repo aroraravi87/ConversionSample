@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 
 namespace AVSToJVSConversion.DLL
 {
+    using System;
+    using System.Data.SqlClient;
+
     public class OperationDao : IDisposable
     {
         static SqlCommand _command = null;

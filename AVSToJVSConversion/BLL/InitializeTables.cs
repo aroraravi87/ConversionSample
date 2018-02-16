@@ -1,4 +1,4 @@
-using System.Data;
+
 
 /*****************************************************************************
 File Name:              (InitializeTables.mls)
@@ -14,8 +14,11 @@ Description:
 
 namespace AVSToJVSConversion.BLL
 {
+    using System.Data;
     class InitializeTables
     {
+        #region ===[Public Members] =====================
+
         public DataTable GetDtForFile()
         {
             DataTable dtForFile;
@@ -118,15 +121,16 @@ namespace AVSToJVSConversion.BLL
             dc.DefaultValue = "";
             dtForVariables.Columns.Add(dc);
 
-            dc = new DataColumn("Parameter", typeof(System.String));
+            dc = new DataColumn("VariableType", typeof(System.String));
             dc.DefaultValue = "";
             dtForVariables.Columns.Add(dc);
 
-            dc = new DataColumn("Variable", typeof(System.String));
+            dc = new DataColumn("VariableName", typeof(System.String));
             dc.DefaultValue = "";
             dtForVariables.Columns.Add(dc);
 
             return dtForVariables;
-        }
+        } 
+        #endregion
     }
 }

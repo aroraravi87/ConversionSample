@@ -1,29 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
-using System.IO;
-using System.IO.Packaging;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
-using AVSToJVSConversion.BLL;
-using sc = System.Windows.Controls;
-using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
-using System.Windows.Input;
-using AVSToJVSConversion.Common;
-
+﻿
+using System.Diagnostics;
+using System.Net;
 
 namespace AVSToJVSConversion.ViewModel
 {
-    public class MainWindowViewModel : INotifyPropertyChanged
+    using System;
+    using System.ComponentModel;
+    using System.Configuration;
+    using System.IO;
+    using System.Linq;
+    using System.Threading;
+    using SW = System.Windows;
+    using System.Windows.Media;
+    using System.Windows.Forms;
+    using System.Windows.Input;
+    using BLL;
+    using Model;
+    using sc = System.Windows.Controls;
+
+
+    using Common;
+
+
+    public class MainWindowViewModel : INotifyPropertyChanged, IDialogRequestClose
     {
 
         #region === [Properties]================================
+
+        public ICommand SelectCommand { get; set; }
+        private ICommand instigateWorkCommand { get; set; }
 
         private string _AVSPath;
 
@@ -137,9 +142,9 @@ namespace AVSToJVSConversion.ViewModel
                 RaisedPropertyChanged("MlsFileCount");
             }
         }
-        private Visibility _progressVisibility;
+        private SW.Visibility _progressVisibility;
 
-        public Visibility ProgressVisibility
+        public SW.Visibility ProgressVisibility
         {
             get { return _progressVisibility; }
             set
@@ -171,9 +176,9 @@ namespace AVSToJVSConversion.ViewModel
                 RaisedPropertyChanged("FailureCount");
             }
         }
-        private Visibility _progressStatusVisibility;
+        private SW.Visibility _progressStatusVisibility;
 
-        public Visibility ProgressStatusVisibility
+        public SW.Visibility ProgressStatusVisibility
         {
             get { return _progressStatusVisibility; }
             set
@@ -182,6 +187,22 @@ namespace AVSToJVSConversion.ViewModel
                 RaisedPropertyChanged("ProgressStatusVisibility");
             }
         }
+
+
+        private bool _close;
+        public bool Close
+        {
+            get { return _close; }
+            set
+            {
+                if (_close == value)
+                    return;
+                _close = value;
+                RaisedPropertyChanged("Close");
+            }
+        }
+
+
         #endregion
 
 
@@ -191,12 +212,12 @@ namespace AVSToJVSConversion.ViewModel
 
         private Utility _utility = null;
 
-        public ICommand SelectCommand { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         private BackgroundWorker backGroundWorker;
-        private ICommand instigateWorkCommand { get; set; }
+
+        public event EventHandler<DialogCloseRequestedEventArgs> CloseRequested;
 
         /// <summary>
         /// 
@@ -210,20 +231,25 @@ namespace AVSToJVSConversion.ViewModel
             }
         }
 
+        private readonly IDialogService _dialogService;
+
         /// <summary>
         /// 
         /// </summary>
-        public MainWindowViewModel()
+        public MainWindowViewModel(IDialogService dialogService)
         {
-            SelectCommand = new CustomCommand(OnActionExecute);
+            _dialogService = dialogService;
+            SelectCommand = new RelayCommand(OnActionExecute);
             backGroundWorker = new BackgroundWorker();
             _utility = new Utility();
             MlsFileCount = 0;
-            ProgressVisibility = Visibility.Collapsed;
-            ProgressStatusVisibility = Visibility.Collapsed;
+            ProgressVisibility = SW.Visibility.Collapsed;
+            ProgressStatusVisibility = SW.Visibility.Collapsed;
             SuccessCount = 0;
             FailureCount = 0;
         }
+
+
 
 
         // your UI binds to this command in order to kick off the work
@@ -262,10 +288,21 @@ namespace AVSToJVSConversion.ViewModel
         /// <param name="Parameter"></param>
         private void OnActionExecute(object Parameter)
         {
+
             switch (Parameter.ToString())
             {
+                case "Setting":
+                    DisplaySettingDialog();
+                    break;
+                case "FAQ":
+                    DownloadDocument();
+                    break;
+                case "Help":
+                    DownloadDocument();
+                    break;
+
                 case "BrowseAVS":
-                    ErrorMessage = string.Empty;
+                    ResetFields();
                     using (var folderDialog = new FolderBrowserDialog())
                     {
                         folderDialog.ShowDialog();
@@ -273,7 +310,7 @@ namespace AVSToJVSConversion.ViewModel
                     }
                     break;
                 case "BrowseLibrary":
-                    ErrorMessage = string.Empty;
+                    ResetFields();
                     using (var folderDialog = new FolderBrowserDialog())
                     {
                         folderDialog.ShowDialog();
@@ -281,7 +318,7 @@ namespace AVSToJVSConversion.ViewModel
                     }
                     break;
                 case "BrowseJVS":
-                    ErrorMessage = string.Empty;
+                    ResetFields();
                     using (var folderDialog = new FolderBrowserDialog())
                     {
                         folderDialog.ShowDialog();
@@ -295,14 +332,89 @@ namespace AVSToJVSConversion.ViewModel
                     AVSPath = string.Empty;
                     JVSPath = string.Empty;
                     LibraryPath = string.Empty;
-                    ValidateError.Opacity = 0;
-                    ErrorMessage = string.Empty;
-                    Status = false;
+                    if (ValidateError != null)
+                        ValidateError.Opacity = 0;
+                    ResetFields();
                     break;
+
 
             }
 
         }
+
+        private void DownloadDocument()
+        {
+            string str = string.Format("{0}{1}", ConfigurationManager.AppSettings["DocumentPath"], "Conversion1.pdf");
+            try
+            {
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = str;
+                    process.Start();
+                    process.WaitForExit();
+                }
+            }
+            catch (Exception ex)
+            {
+                SW.MessageBox.Show("Document not supported,Please contact to Administrator.", "Invalid Document", SW.MessageBoxButton.OKCancel, SW.MessageBoxImage.Error);
+            }
+        }
+
+        private void ResetFields()
+        {
+            ErrorMessage = string.Empty;
+            Status = false;
+            ProgressVisibility = SW.Visibility.Collapsed;
+            ProgressStatusVisibility = SW.Visibility.Collapsed;
+        }
+
+        private void DisplaySettingDialog()
+        {
+            SettingViewModel viewmodel = new SettingViewModel();
+
+            SettingModel objSetting = BindSettingData();
+
+
+            bool? result = _dialogService.ShowDialog(viewmodel, objSetting);
+            if (result.HasValue)
+            {
+                if (result.Value)
+                {
+
+                    if (viewmodel.SaveSetting())
+                    {
+                        viewmodel.UpdateStatus = true;
+                        viewmodel.Message = "Setting updated successfully!!";
+                        objSetting = null;
+                        _dialogService.ShowDialog(viewmodel, objSetting);
+
+                    }
+                    else
+                    {
+                        viewmodel.UpdateStatus = false;
+                        DisplaySettingDialog();
+                    }
+                }
+                else
+                {
+
+                }
+            }
+        }
+
+
+
+        public SettingModel BindSettingData()
+        {
+            SettingModel objSettingModel = new SettingModel();
+            objSettingModel.ConnectionPath = Helpers.GetSetting("dbconnection", "Web");
+            objSettingModel.LogPath = Helpers.GetSetting("basePath", "App");
+            objSettingModel.ExcelPath = Helpers.GetSetting("ExcelPath", "App");
+            return objSettingModel;
+        }
+
+
+
 
 
         /// <summary>
@@ -372,12 +484,16 @@ namespace AVSToJVSConversion.ViewModel
             bool IsSuccess = false;
             int counter = 0;
             int ProgressPecentage = 1;
-
+            if (!Directory.Exists(Path.Combine(ConfigurationManager.AppSettings["basePath"], "FailedScripts")))
+            {
+                Directory.CreateDirectory(Path.Combine(ConfigurationManager.AppSettings["basePath"], "FailedScripts"));
+            }
             InputProcessor inputProcessor2 = new InputProcessor();
             int filelength = Directory.EnumerateFiles(AVSPath, "*.mls").Count();
             MlsFileCount = filelength;
-            ProgressVisibility = Visibility.Visible;
+            ProgressVisibility = SW.Visibility.Visible;
             _utility.GetCustomLogAppender();
+            int existCount = Directory.GetFiles(JVSPath).Count();
             if (Directory.Exists(Path.Combine(ConfigurationManager.AppSettings["basePath"], "FailedScripts")))
                 Array.ForEach(Directory.GetFiles(Path.Combine(ConfigurationManager.AppSettings["basePath"], "FailedScripts")), File.Delete);
             foreach (string file in Directory.EnumerateFiles(AVSPath, "*.mls"))
@@ -397,8 +513,9 @@ namespace AVSToJVSConversion.ViewModel
                     ProgressStatus, filelength);
             }
 
-            ProgressStatusVisibility = Visibility.Visible;
-            SuccessCount = Directory.GetFiles(JVSPath).Count();
+
+            ProgressStatusVisibility = SW.Visibility.Visible;
+            SuccessCount = Directory.GetFiles(JVSPath).Count() == existCount ? Directory.GetFiles(JVSPath).Count() : Directory.GetFiles(JVSPath).Count() - existCount;
             FailureCount = Directory.GetFiles(Path.Combine(ConfigurationManager.AppSettings["basePath"],
                 "FailedScripts")).Count();
             AVSPath = string.Empty;

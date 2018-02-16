@@ -1,10 +1,11 @@
-﻿using System;
-using System.Windows.Data;
-using System.Windows.Media;
-
+﻿
 
 namespace AVSToJVSConversion.Common
 {
+    using System;
+    using System.Windows.Data;
+    using System.Windows.Media;
+
     [ValueConversion(typeof(string), typeof(SolidColorBrush))]
     class CustomConverter:IValueConverter
     {

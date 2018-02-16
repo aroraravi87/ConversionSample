@@ -1,11 +1,3 @@
-using System.Data;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SqlClient;
-using System;
 
 /*****************************************************************************
 File Name:              (LineValidator.mls)
@@ -18,13 +10,17 @@ File Name:              (LineValidator.mls)
 Description:       
 
 *****************************************************************************/
-using AVSToJVSConversion.Common;
-using AVSToJVSConversion.DLL;
 
 namespace AVSToJVSConversion.BLL
 {
+    /// <summary>
+    /// 
+    /// </summary>
     class LineValidator
     {
+
+        #region ===[Public Members]==========================
+
         public static bool MultiLineCommentFlag = false;
 
         /// <summary>
@@ -34,7 +30,6 @@ namespace AVSToJVSConversion.BLL
         /// <returns></returns>
         public string Operation10(string content)
         {
-
 
             string line;
             char[] lineArray;
@@ -144,6 +139,7 @@ namespace AVSToJVSConversion.BLL
                 line = line + character;
             }
             return line;
-        }
+        } 
+        #endregion
     }
 }

@@ -1,8 +1,11 @@
-﻿using System.Windows;
-using log4net;
+﻿
 
 namespace AVSToJVSConversion
 {
+    using System.Windows;
+    using ViewModel;
+    using Views;
+
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
@@ -10,8 +13,13 @@ namespace AVSToJVSConversion
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            log4net.Config.XmlConfigurator.Configure();
-            base.OnStartup(e);
-        }
+            log4net.Config.XmlConfigurator.Configure();   
+            IDialogService dialogService = new DialogService(MainWindow);
+            dialogService.Register<SettingViewModel,Setting>();
+            var viewmodel = new MainWindowViewModel(dialogService) ;
+            var view = new MainWindow {DataContext = viewmodel};
+            view.ShowDialog();
+          
+        } 
     }
 }

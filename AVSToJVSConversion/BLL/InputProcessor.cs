@@ -1,15 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
-using System.Diagnostics;
-using System.IO;
-using System.Data;
-using System.Linq;
-using System.Runtime.Remoting.Channels;
-using System.Threading;
-using AVSToJVSConversion.ViewModel;
-using log4net;
+
 
 /*****************************************************************************
 File Name:              (InputProcessor.mls)
@@ -25,34 +14,46 @@ Description:
 
 namespace AVSToJVSConversion.BLL
 {
+    using System;
+    using System.Configuration;
+    using System.IO;
+    using System.Data;
+    using log4net;
+
     internal class InputProcessor
     {
+        #region ===[Variable and Constructer]=====================================
+
         public static readonly ILog Log =
-            LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+           LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private Operations _operations = null;
         private InitializeTables _initializeTables = null;
         private IncludeFileHandler _includeFileHandler = null;
+        private ExcelReader _excelReader = null;
         private Utility _utility = null;
         private string _fileName;
         private string _includeList;
-        private MainWindowViewModel objMainWindowViewModel { get; set; }
+
         private DataTable _dtForFile = null;
         private DataTable _dtForLiterals = null;
         private DataTable _dtForMethodsAvailable = null;
         private DataTable _dtForInclude = null;
         private DataTable _dtForVariables = null;
+        private DataTable _dtForExcel = null;
 
         public InputProcessor()
         {
+            _excelReader = new ExcelReader();
             _operations = new Operations();
             _initializeTables = new InitializeTables();
             _includeFileHandler = new IncludeFileHandler();
             _utility = new Utility();
-            objMainWindowViewModel = new MainWindowViewModel();
-        }
+        } 
+        #endregion
 
 
+        #region ===[Public Members]====================================
         /// <summary>
         /// 
         /// </summary>
@@ -61,18 +62,17 @@ namespace AVSToJVSConversion.BLL
         /// <param name="outputPath"></param>
         public void Process(string avsScriptPath, string avsLibraryPath, string outputPath, string fileName)
         {
-
             if (!string.IsNullOrWhiteSpace(fileName))
             {
                 try
                 {
                     bool mainNotExist;
                     bool t = false;
-                    int counter = 1;
                     int containsGlobalTable = 0;
 
-
+                    //   _dtForExcel = _excelReader.ConvertExcelToDataTable("");
                     _dtForMethodsAvailable = _initializeTables.GetDtForMethodPresent();
+                    _dtForVariables = _initializeTables.GetDtForVariables();
                     _fileName = fileName.Replace(avsScriptPath + "\\", "");
                     Log.Info(string.Format("FileName:{0},Status {1}", _fileName, "Processing Start.."));
 
@@ -83,8 +83,8 @@ namespace AVSToJVSConversion.BLL
                     if(!t)
                         continue;*/
 
-                    // if (!file.Contains("FAS49_PM_Pfolio_FX"))
-                    //   continue;
+                    //if(!_fileName.Contains("Delivery"))
+                    //return;
 
                     _dtForFile = _operations.GetDataTableForFile(fileName);
                     _operations.RemoveCommentsFromDtForFile(_dtForFile);
@@ -102,7 +102,7 @@ namespace AVSToJVSConversion.BLL
                     _includeList = _operations.GetIncludeList(_dtForFile, _dtForLiterals);
                     if (!_includeList.Equals(""))
                     {
-                        _includeFileHandler.ManageIncludes(_includeList, avsLibraryPath, _dtForMethodsAvailable);
+                        _includeFileHandler.ManageIncludes(_includeList, avsLibraryPath, _dtForMethodsAvailable, _dtForVariables);
                     }
                     _operations.RemoveIncludeListStatement(_dtForFile);
                     _dtForInclude = _initializeTables.GetDtForInclude();
@@ -113,25 +113,23 @@ namespace AVSToJVSConversion.BLL
                     {
                         containsGlobalTable = 1;
                     }
-                    _operations.GetMethodsListInFile(_dtForFile, _fileName, _dtForMethodsAvailable, containsGlobalTable);
-                    _dtForVariables = _operations.GetVariableList(_dtForFile, _fileName);
+                    _operations.GetMethodsListInFile(_dtForFile, _fileName, _dtForMethodsAvailable, containsGlobalTable, _dtForVariables);
+                    _operations.GetVariableList(_dtForFile, _fileName, _dtForVariables);
                     _operations.ConvertStaticMethod(_dtForFile, _dtForMethodsAvailable, _dtForInclude, _fileName);
                     _operations.ConvertNonStaticMethod(_dtForFile, _dtForMethodsAvailable, _dtForInclude, _fileName);
                     _operations.ConvertConditionalStatements(_dtForFile, "if");
                     _operations.ConvertConditionalStatements(_dtForFile, "while");
                     _operations.ReplaceTrueFalse(_dtForFile);
                     _operations.ConvertForStatements(_dtForFile); // Initliazed for loop variable
+                    _operations.referVariablesFromLibrary(_dtForFile, _dtForVariables, _fileName);
                     _operations.ConvertEnums(_dtForFile, _dtForVariables, _fileName, _dtForInclude);
                     _operations.AddPublicStaticInLibraryMethods(_dtForFile);
-                    _operations.AddThrowsExceptionInLibraryMethods(_dtForFile);
-                    _operations.GenerateOutputFile(_dtForFile, _dtForInclude, _dtForLiterals, outputPath, _fileName, _dtForMethodsAvailable);
+                    _operations.AddThrowsExceptionInMethods(_dtForFile);
+                    _operations.AddLibraryInitialize(_dtForFile, _dtForMethodsAvailable, _fileName, _dtForInclude);
+                    _operations.GenerateOutputFile(_dtForFile, _dtForInclude, _dtForLiterals, outputPath, _fileName,
+                        _dtForMethodsAvailable);
                     Log.Info(string.Format("FileName:{0},Status {1}", _fileName, "Completed Successfully"));
-
-
-
-
                 }
-
                 catch (Exception ex)
                 {
                     GenerateFailedScripts(ex);
@@ -143,10 +141,12 @@ namespace AVSToJVSConversion.BLL
                     _utility.destroyDT(_dtForLiterals);
                     _utility.destroyDT(_dtForMethodsAvailable);
                     _utility.destroyDT(_dtForVariables);
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
                 }
             }
-            // return true;
-        }
+        } 
+       
 
         /// <summary>
         /// 
@@ -172,5 +172,6 @@ namespace AVSToJVSConversion.BLL
                     ex.StackTrace);
             }
         }
+        #endregion
     }
 }
