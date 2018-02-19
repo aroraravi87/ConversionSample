@@ -344,7 +344,7 @@ namespace AVSToJVSConversion.ViewModel
 
         private void DownloadDocument()
         {
-            string str = string.Format("{0}{1}", ConfigurationManager.AppSettings["DocumentPath"], "Conversion1.pdf");
+            string str = string.Format("{0}{1}", ConfigurationManager.AppSettings["DocumentPath"], "Conversion.pdf");
             try
             {
                 using (Process process = new Process())
@@ -484,9 +484,16 @@ namespace AVSToJVSConversion.ViewModel
             bool IsSuccess = false;
             int counter = 0;
             int ProgressPecentage = 1;
-            if (!Directory.Exists(Path.Combine(ConfigurationManager.AppSettings["basePath"], "FailedScripts")))
+
+            if (!Directory.Exists(Path.Combine(ConfigurationManager.AppSettings["basePath"], "Logs")))
             {
-                Directory.CreateDirectory(Path.Combine(ConfigurationManager.AppSettings["basePath"], "FailedScripts"));
+                Directory.CreateDirectory(Path.Combine(ConfigurationManager.AppSettings["basePath"],
+                    "Logs"));
+            }
+
+            if (!Directory.Exists(Path.Combine(string.Concat(ConfigurationManager.AppSettings["basePath"], "\\Logs"), "FailedScripts")))
+            {
+                Directory.CreateDirectory(Path.Combine(string.Concat(ConfigurationManager.AppSettings["basePath"], "\\Logs"), "FailedScripts"));
             }
             InputProcessor inputProcessor2 = new InputProcessor();
             int filelength = Directory.EnumerateFiles(AVSPath, "*.mls").Count();
@@ -494,8 +501,8 @@ namespace AVSToJVSConversion.ViewModel
             ProgressVisibility = SW.Visibility.Visible;
             _utility.GetCustomLogAppender();
             int existCount = Directory.GetFiles(JVSPath).Count();
-            if (Directory.Exists(Path.Combine(ConfigurationManager.AppSettings["basePath"], "FailedScripts")))
-                Array.ForEach(Directory.GetFiles(Path.Combine(ConfigurationManager.AppSettings["basePath"], "FailedScripts")), File.Delete);
+            if (Directory.Exists(Path.Combine(string.Concat(ConfigurationManager.AppSettings["basePath"], "\\Logs"), "FailedScripts")))
+                Array.ForEach(Directory.GetFiles(Path.Combine(string.Concat(ConfigurationManager.AppSettings["basePath"], "\\Logs"), "FailedScripts")), File.Delete);
             foreach (string file in Directory.EnumerateFiles(AVSPath, "*.mls"))
             {
 
@@ -516,7 +523,7 @@ namespace AVSToJVSConversion.ViewModel
 
             ProgressStatusVisibility = SW.Visibility.Visible;
             SuccessCount = Directory.GetFiles(JVSPath).Count() == existCount ? Directory.GetFiles(JVSPath).Count() : Directory.GetFiles(JVSPath).Count() - existCount;
-            FailureCount = Directory.GetFiles(Path.Combine(ConfigurationManager.AppSettings["basePath"],
+            FailureCount = Directory.GetFiles(Path.Combine(string.Concat(ConfigurationManager.AppSettings["basePath"], "\\Logs"),
                 "FailedScripts")).Count();
             AVSPath = string.Empty;
             LibraryPath = string.Empty;

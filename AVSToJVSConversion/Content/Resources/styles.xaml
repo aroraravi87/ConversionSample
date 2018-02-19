@@ -26,39 +26,8 @@
                 <Setter Property="BorderBrush"  Value="#FF8BF70A"/>
                 <Setter Property="BorderThickness"  Value="2"/>
                 <Setter Property="Grid.ZIndex" Value="1"/>
-                <!--<Setter Property="RenderTransform">
-                        <Setter.Value>
-                            <ScaleTransform ScaleX="1.01" ScaleY="1.25" />
-                        </Setter.Value>
-                    </Setter>-->
             </Trigger>
-
-            <!--<EventTrigger RoutedEvent="Button.Click">
-                    <BeginStoryboard>
-                        <Storyboard TargetProperty="RenderTransform.Angle">
-                            <DoubleAnimation 
-                                From="-2" To="2" Duration="0:0:0.05" 
-                                AutoReverse="True"
-                                RepeatBehavior="2x"
-                                FillBehavior="Stop" />
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>-->
-            <!--<Trigger Property="ToolTip" Value="{x:Static sys:String.Empty}">
-                    <Setter Property="ToolTipService.IsEnabled" Value="False" />
-                </Trigger>-->
-            <!--<EventTrigger RoutedEvent="Button.MouseEnter">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <ColorAnimation To="Green" 
-                                    Storyboard.TargetProperty="(SolidColorBrush.Color)" 
-                                    FillBehavior="Stop" 
-                                    Duration="0:0:1"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>-->
-
-        </Style.Triggers>
+ </Style.Triggers>
     </Style>
     <Style TargetType="{x:Type Button}">
 

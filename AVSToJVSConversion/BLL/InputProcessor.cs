@@ -49,7 +49,7 @@ namespace AVSToJVSConversion.BLL
             _initializeTables = new InitializeTables();
             _includeFileHandler = new IncludeFileHandler();
             _utility = new Utility();
-        } 
+        }
         #endregion
 
 
@@ -145,8 +145,8 @@ namespace AVSToJVSConversion.BLL
                     GC.WaitForPendingFinalizers();
                 }
             }
-        } 
-       
+        }
+
 
         /// <summary>
         /// 
@@ -154,18 +154,24 @@ namespace AVSToJVSConversion.BLL
         /// <param name="ex"></param>
         private void GenerateFailedScripts(Exception ex)
         {
-            if (!Directory.Exists(Path.Combine(ConfigurationManager.AppSettings["basePath"], "FailedScripts")))
+            if (!Directory.Exists(Path.Combine(ConfigurationManager.AppSettings["basePath"], "Logs")))
             {
                 Directory.CreateDirectory(Path.Combine(ConfigurationManager.AppSettings["basePath"],
+                    "Logs"));
+            }
+
+            if (!Directory.Exists(Path.Combine(string.Concat(ConfigurationManager.AppSettings["basePath"], "\\Logs"), "FailedScripts")))
+            {
+                Directory.CreateDirectory(Path.Combine(string.Concat(ConfigurationManager.AppSettings["basePath"], "\\Logs"),
                     "FailedScripts"));
             }
-            if (File.Exists(Path.Combine(ConfigurationManager.AppSettings["basePath"],
+            if (File.Exists(Path.Combine(string.Concat(ConfigurationManager.AppSettings["basePath"], "\\Logs"),
                   string.Format("{0}\\{1}", "FailedScripts", _fileName))))
             {
-                File.Delete(Path.Combine(ConfigurationManager.AppSettings["basePath"],
+                File.Delete(Path.Combine(string.Concat(ConfigurationManager.AppSettings["basePath"], "\\Logs"),
                     string.Format("{0}\\{1}", "FailedScripts", _fileName)));
             }
-            using (StreamWriter sw = File.CreateText(Path.Combine(ConfigurationManager.AppSettings["basePath"],
+            using (StreamWriter sw = File.CreateText(Path.Combine(string.Concat(ConfigurationManager.AppSettings["basePath"], "\\Logs"),
                 string.Format("{0}\\{1}", "FailedScripts", _fileName))))
             {
                 sw.WriteLine("FileName:{0},Exception Message {1},Trace Info {2}", _fileName, ex.Message,

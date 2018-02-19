@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="AVS to JVS conversion tool" Language="1033" Version="1.0.0.0" Manufacturer="Sapient Consulting" UpgradeCode="b4a08fc2-96cf-4330-ab02-16209168221f">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+    <UIRef Id="WixUI_InstallDir" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <!--Add Cab1.cab File inside the Package-->
+    <Media Id="1" Cabinet="cab1.cab" EmbedCab="yes" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+     <WixVariable Id="WixUIBannerBmp" Value="$(var.AVSToJVSConversion.ProjectDir)Content/Images/installer.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(var.AVSToJVSConversion.ProjectDir)Content/Images/installer.bmp" />
+
+
+    <!--Here We Install Our Main App-->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="AVS to JVS conversion tool">
+          <Directory Id="IMAGESFOLDER" Name="Images"></Directory>
+          <Directory Id="SAMPLEFORMATFOLDER" Name="SampleFormat"></Directory>
+        </Directory>
+      </Directory>
+
+      <!-- Step 1: For the Program Menu -->
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="AVS to JVS conversion tool"/>
+      </Directory>
+
+      <!--Step 2:For Desktop Folder-->
+      <Directory Id="DesktopFolder"/>
+
+      <!--Step 3:For StartUp Folder-->
+      <Directory Id="StartupFolder"/>
+
+    </Directory>
+
+    <!--Step 4 :Add Main App exe-->
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="APPLICATION" Guid="{3BE41899-C5B5-4ABE-A7B5-E110FC50F01F}">
+        <File Source="$(var.AVSToJVSConversion.TargetDir)\AVSToJVSConversion.exe" Name="AVSToJVSConversion.exe" Id="MyAppEXE" KeyPath="yes"/>
+        <File Source="$(var.AVSToJVSConversion.TargetDir)\AVSToJVSConversion.exe.config" Name="AVSToJVSConversion.exe.config" Id="MyAppEXE1" KeyPath="no"/>
+       <File Source="$(var.AVSToJVSConversion.TargetDir)\log4net.dll" Name="log4net.dll" Id="MyAppEXE3"  KeyPath="no"/>
+       <File Source="$(var.AVSToJVSConversion.TargetDir)\Microsoft.Expression.Controls.dll" Name="Microsoft.Expression.Controls.dll" Id="MyAppEXE4" KeyPath="no"/>
+       <File Source="$(var.AVSToJVSConversion.TargetDir)\Microsoft.Expression.Drawing.dll" Name="Microsoft.Expression.Drawing.dll" Id="MyAppEXE5"  KeyPath="no"/>
+      </Component>
+
+    </DirectoryRef>
+
+    <DirectoryRef Id="SAMPLEFORMATFOLDER">
+      <Component Id="SAMPLEFORMAT" Guid="{6773FAE9-66F3-4118-B90F-6BFB90152572}">
+     <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Documents/Conversion.pdf" Name="Conversion.pdf" Id="ID_83217" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Documents/Conversion.docx" Name="Conversion.docx" Id="ID_83218" KeyPath="no"/>
+       <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Documents/licence.rtf" Name="licence.rtf" Id="ID_83220" KeyPath="no"/>
+      </Component>
+
+    </DirectoryRef>
+    <DirectoryRef Id="IMAGESFOLDER">
+      <Component Id="IMAGES" Guid="{6773FAE9-66F3-4118-B90F-6BFB90152571}">
+       <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/bg_waves.jpg" Name="bg_waves.jpg" Id="ID_Img1" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/help-icon.png" Name="help-icon.png" Id="ID_Img2" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/help-icon1.png" Name="help-icon1.png" Id="ID_Img3" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/help.png" Name="help.png" Id="ID_Img4" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/help1.png" Name="help1.png" Id="ID_Img5" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/help2.png" Name="help2.png" Id="ID_Img6" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/help3.png" Name="help3.png" Id="ID_Img7" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/icon.jpg" Name="icon.png" Id="ID_Img8" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/setting.jpg" Name="setting.jpg" Id="ID_Img9" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/setting.png" Name="setting.png" Id="ID_Img10" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/settings.png" Name="settings.png" Id="ID_Img11" KeyPath="no"/>
+        <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/waves.jpg" Name="waves.jpg" Id="ID_Img12" KeyPath="no"/>
+      <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/icon_icon.ico" Name="icon.ico" Id="ID_Img13" KeyPath="no"/>
+      <File Source="$(var.AVSToJVSConversion.ProjectDir)Content/Images/installer.bmp" Name="installer.bmp" Id="ID_Img14" KeyPath="no"/>
+
+      </Component>
+
+    </DirectoryRef>
+
+    <!-- Step 1.1: Add the shortcut to your installer package Program Menu or 
+
+Start Menu-->
+    <DirectoryRef Id="ApplicationProgramsFolder">
+      <Component Id="ApplicationShortcut" Guid="{15850B4A-CED3-4779-9F74-B3E1FF47EE30}">
+        <!--Add Shortcut of the Application in start Menu-->
+        <Shortcut Id="ApplicationStartMenuShortcut" Name="AVSToJVSConversion" Description="AVS to JVS conversion tool" Target="[INSTALLFOLDER]AVSToJVSConversion.exe"
+
+WorkingDirectory="INSTALLFOLDER">
+          <!--Add Icon to the ShortCut-->
+          <Icon Id="MYPMenuIcon"  SourceFile=".\icon_icon.ico" />
+        </Shortcut>
+        <!--Remove the Folder At time of Uninstall-->
+        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU"  Key='Software\[Manufacturer]\[ProductName]'
+                       Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
+    <!-- Step 2.1: Add the shortcut to your installer package For DeskTop-->
+    <DirectoryRef Id="DesktopFolder">
+      <Component Id="ApplicationDeskShortcutComp" Guid="{57299140-65EE-49CD-8DB2-C7D0A11C712F}">
+        <Shortcut Id="ApplicationDeskShortcut" Name="AVSToJVSConversion"
+                  Description="AVS to JVS conversion tool" Target="[INSTALLFOLDER]AVSToJVSConversion.exe"
+                  WorkingDirectory="INSTALLFOLDER">
+          <Icon Id="MYDeskIcon"  SourceFile=".\icon_icon.ico" />
+        </Shortcut>
+        <RemoveFolder Id="DesktopFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU"  Key='Software\[Manufacturer]\[ProductName]'
+                       Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
+    <!--Step 3.1: add Shortcut to StartUp Folder to run application when you 
+
+login-->
+    <DirectoryRef Id="StartupFolder">
+      <Component Id="ApplicationStartUpShortcutComp" Guid="{C31ED7E0-1A18-4119-9CB4-4B10BF891865}">
+        <Shortcut Id="ApplicationStartUpDeskShortcut" Name="AVSToJVSConversion"
+
+Description="AVS to JVS conversion tool"
+            Target="[INSTALLFOLDER]AVSToJVSConversion.exe"
+
+WorkingDirectory="INSTALLFOLDER">
+          <Icon Id="MyIconStartUp"  SourceFile=".\icon_icon.ico" />
+        </Shortcut>
+        <RemoveFolder Id="StartupFolder" On="uninstall"/>
+        <RegistryValue Root="HKCU"  Key='Software\[Manufacturer]\[ProductName]'
+                       Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+
+    <!--Add Component-->
+    <Feature Id="MainApplication" Title="Main Application" Level="1">
+      <ComponentRef Id="IMAGES" />
+      <ComponentRef Id="APPLICATION" />
+      <ComponentRef Id="SAMPLEFORMAT" />
+      <!--Step 1.2:Add Start menu or program  Shortcut-->
+      <ComponentRef Id="ApplicationShortcut" />
+      <!--step 2.2Add DeskTop Shortcut-->
+      <ComponentRef Id="ApplicationDeskShortcutComp" />
+      <!--step 3.2Add DeskTop Shortcut-->
+      <ComponentRef Id="ApplicationStartUpShortcutComp"/>
+    </Feature>
+  </Product>
+</Wix>

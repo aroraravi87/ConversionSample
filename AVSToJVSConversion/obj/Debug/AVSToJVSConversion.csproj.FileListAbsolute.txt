@@ -28,6 +28,7 @@ D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\Content\Resources\styles.baml
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\Views\Setting.g.cs
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\Views\MainWindow.g.cs
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\App.g.cs
+D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion_Content.g.cs
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\GeneratedInternalTypeHelper.g.cs
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion_MarkupCompile.cache
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion_MarkupCompile.lref
@@ -39,5 +40,3 @@ D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion.Properties
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion.csproj.GenerateResource.Cache
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion.exe
 D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion.pdb
-D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion.csprojResolveAssemblyReference.cache
-D:\AVSToJVSRepository\AVSToJVSConversion\obj\Debug\AVSToJVSConversion_Content.g.cs

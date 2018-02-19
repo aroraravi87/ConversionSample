@@ -168,6 +168,7 @@
     </EmbeddedResource>
     <None Include="Content\Documents\Conversion.docx" />
     <None Include="Content\Documents\Conversion.pdf" />
+    <None Include="Content\Documents\licence.rtf" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -231,7 +232,10 @@
     <Resource Include="Content\Images\help3.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Content\Images\icon_icon.ico" />
+    <Resource Include="Content\Images\installer.bmp" />
     <Content Include="Content\Images\Icon.ico" />
+    <Resource Include="Content\Images\installer1.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

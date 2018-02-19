@@ -1,0 +1,9 @@
+﻿<Window x:Class="AVSToJVSConversion.Views.test"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="test" Height="300" Width="300">
+    <Grid>
+        <TextBlock Name="tblText" FontSize="25" FontWeight="Bold" Foreground="Green"></TextBlock>
+        <Button Height="100" Width="200" Click="ButtonBase_OnClick" Content="submit" ></Button>
+    </Grid>
+</Window>

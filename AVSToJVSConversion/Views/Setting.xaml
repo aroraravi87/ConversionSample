@@ -1,0 +1,106 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm = "clr-namespace:AVSToJVSConversion.ViewModel"
+         xmlns:ec="http://schemas.microsoft.com/expression/2010/controls"
+         xmlns:cnvt="clr-namespace:AVSToJVSConversion.Common"
+         x:Class="AVSToJVSConversion.Views.Setting"
+        mc:Ignorable="d"
+        Title="Setting" Height="350" Width="500" ResizeMode="NoResize" HorizontalAlignment="Center" VerticalAlignment="Center"
+         Icon="/AVSToJVSConversion;component/Content/Images/icon.jpg"
+        >
+    <Window.Resources>
+        <cnvt:CustomConverter x:Key="Converter"></cnvt:CustomConverter>
+    </Window.Resources>
+
+    
+    
+    <Grid>
+        <Grid.Background>
+            <ImageBrush  ImageSource="/AVSToJVSConversion;component/Content/Images/waves.jpg"  Stretch="UniformToFill"/>
+        </Grid.Background>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition MinHeight="50" Height="50"/>
+            <RowDefinition MinHeight="50" Height="50"/>
+            <RowDefinition MinHeight="50" Height="50"/>
+            <RowDefinition MinHeight="50" Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="40"/>
+           
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
+        </Grid.ColumnDefinitions>
+
+
+        <TextBox x:Name="txtServerName" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"  HorizontalAlignment="center" VerticalAlignment="Center" MinHeight="25"  TextWrapping="Wrap"  Width="250" Foreground="Black"              
+                 ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" Text="{Binding ServerName, Mode=TwoWay}"  >
+
+        </TextBox>
+        <TextBox x:Name="txtDataBaseName" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"  HorizontalAlignment="center" VerticalAlignment="Center" MinHeight="25"  TextWrapping="Wrap"  Width="250" Foreground="Black"              
+                 ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" Text="{Binding DatabaseName, Mode=TwoWay}"  >
+
+        </TextBox>
+
+        <TextBox x:Name="txtExcelPath" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="center" VerticalAlignment="Center" MinHeight="25" IsReadOnly="True"  TextWrapping="Wrap"  Width="250"  ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" Text="{Binding ExcelPath, Mode=TwoWay}"  />
+
+        <TextBox x:Name="txtLogPath" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" MinHeight="25" IsReadOnly="True"  TextWrapping="Wrap"  Width="250" ToolTip="{Binding RelativeSource={RelativeSource Self}, Path=Text }" VerticalAlignment="Center"
+                  Text="{Binding LogPath, Mode=TwoWay}"/>
+
+        <Button  x:Name="buttonExcelPathSelect" Content="Browse" x:Uid="ExcelPath" HorizontalAlignment="Right" Height="25" Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2"
+                      Width="70" 
+                     Background="white" FontFamily="Sans-Serif"
+                  Command="{Binding SelectCommand}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}">
+        </Button>
+        <Button  x:Name="buttonLogPathSelect" Background="white" Content="Browse" x:Uid="LogPath" HorizontalAlignment="Right" Height="25" Grid.Row="4" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Top" Width="70"  FontFamily="Sans-Serif"
+                  Command="{Binding SelectCommand}" CommandParameter="{Binding Path=Uid,RelativeSource={RelativeSource Self}}">
+        </Button>
+        <Button  x:Name="buttonSave" Content="Update" x:Uid="Save" IsDefault="True"  Background="white" HorizontalContentAlignment="Center"    Height="25" Width="70"  FontFamily="Sans-Serif" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="1"  HorizontalAlignment="Center" VerticalAlignment="Center"  Command="{Binding UpdateCommand}">
+        </Button>
+        <Button  x:Name="buttonClose" Content="Close" x:Uid="Close" IsCancel="True"  Background="white" HorizontalContentAlignment="Right" Height="25" Width="70"  FontFamily="Sans-Serif" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3"  HorizontalAlignment="Center" VerticalAlignment="Center" Command="{Binding CloseCommand}" >
+        </Button>
+
+        <Label Content="* Field are mandatory" HorizontalAlignment="Left" Height="26" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" VerticalAlignment="Center"  Foreground="Red" FontWeight="Bold" HorizontalContentAlignment="Left">
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+        
+        <Label Content="Server Name*" HorizontalAlignment="Center" Height="26" VerticalAlignment="Center" Width="100" Foreground="White" Grid.Row="1" Grid.Column="0" HorizontalContentAlignment="Left">
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+        <Label Content="Database Name*" HorizontalAlignment="Center" Height="26" VerticalAlignment="Center" Width="100" Foreground="White" Grid.Row="2" Grid.Column="0" HorizontalContentAlignment="Left">
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+        <Label Content="Excel File Path*" HorizontalAlignment="Center" Height="26"  VerticalAlignment="Center" Width="100" Foreground="White" Grid.Row="3" Grid.Column="0" HorizontalContentAlignment="Left">
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+        <Label Content="Log Folder Path*" HorizontalAlignment="Center" Height="26" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Width="100" Foreground="White" HorizontalContentAlignment="Left">
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+
+        <Label Name="labelErrorValidation"  HorizontalAlignment="Center" Height="30" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="4" VerticalAlignment="Center" FontSize="14" FontWeight="Bold" Opacity="1" Content="{Binding Message}" Foreground="{Binding UpdateStatus,Converter={StaticResource Converter},Mode=Default}">
+            <Label.Effect>
+                <DropShadowEffect/>
+            </Label.Effect>
+        </Label>
+
+    </Grid>
+</Window>
+
